@@ -14,11 +14,6 @@ apply plugin: 'maven'
 apply plugin: 'maven-publish'
 
 
-def name = 'aha-commons-config'
-version = '0.0.12'
-def group = 'com.aha.public'
-
-
 repositories {
     mavenLocal()
     maven {
@@ -34,10 +29,10 @@ def springBootVersion = '2.0.3.RELEASE'
 
 dependencies {
     // 3-part tool dependency
-    compile('com.google.guava:guava:23.0')
-    compile('org.apache.commons:commons-lang3:3.7')
-    compile('com.alibaba:fastjson:1.2.47')
-    compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.4'
+    compile("com.google.guava:guava:23.0")
+    compile("org.apache.commons:commons-lang3:3.7")
+    compile("com.alibaba:fastjson:1.2.47")
+    compile ("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.4")
 
     // springboot
     compile("org.springframework.boot:spring-boot-starter-web:${springBootVersion}")
@@ -46,14 +41,14 @@ dependencies {
     compile("org.springframework.boot:spring-boot-autoconfigure:${springBootVersion}")
 
     // swagger dependency
-    compile('io.swagger:swagger-annotations:1.5.16')
-    compile('io.springfox:springfox-swagger2:2.8.0')
-    compile('io.springfox:springfox-swagger-ui:2.8.0')
+    compile("io.swagger:swagger-annotations:1.5.16")
+    compile("io.springfox:springfox-swagger2:2.8.0")
+    compile("io.springfox:springfox-swagger-ui:2.8.0")
 
 //    // redis dependency
-//    compile('org.springframework.boot:spring-boot-starter-data-redis:${springBootVersion}')
-//    compile('org.apache.commons:commons-pool2')
-//    compile ('org.redisson:redisson:3.9.1')
+    compile("org.springframework.boot:spring-boot-starter-data-redis:${springBootVersion}")
+    compile("org.apache.commons:commons-pool2:2.5.0")
+    compile ("org.redisson:redisson:3.9.1")
 //
 //    // kafka
 //    compile('org.springframework.kafka:spring-kafka')
@@ -85,6 +80,11 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
     from sourceSets.main.allSource
 }
+
+
+def name = 'aha-commons-config'
+version = '0.0.14'
+def group = 'com.aha.public'
 
 //上传jar命令 gradle publish
 publishing {
