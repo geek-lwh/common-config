@@ -8,11 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 
 import javax.sql.DataSource;
 
@@ -24,9 +21,9 @@ import javax.sql.DataSource;
  */
 @Configuration
 @ConditionalOnProperty(name = "use.common.jdbc")
-public class JdbcConfiguration {
+public class DataSourceConfiguration {
 
-    public static final Logger LOG = LoggerFactory.getLogger(JdbcConfiguration.class);
+    public  final Logger logger = LoggerFactory.getLogger(DataSourceConfiguration.class);
 
     @Value("${common.jdbc.driverClassName}")
     private String driverClassName;
@@ -55,7 +52,6 @@ public class JdbcConfiguration {
     @Primary
     @Bean(name = "dataSource")
     public DataSource dataSource() {
-        LOG.info("============= begin init datasource params : {} =============", this);
         HikariDataSource hikariDataSource = new HikariDataSource();
         hikariDataSource.setDriverClassName(driverClassName);
         hikariDataSource.setJdbcUrl(jdbcUrl);
@@ -66,7 +62,7 @@ public class JdbcConfiguration {
         hikariDataSource.setMaximumPoolSize(maximumPoolSize);
         hikariDataSource.setMinimumIdle(minimumIdle);
         hikariDataSource.setPoolName("common-jdbc-pool");
-        LOG.info("============= datasource init completed ! =============");
+        logger.info("hikari datasource init finish >> {}",hikariDataSource);
         return hikariDataSource;
     }
 

@@ -1,11 +1,8 @@
 package com.aha.tech.config.mybatis.Interceptor;
 
-import com.aha.tech.config.jdbc.JdbcConfiguration;
-import com.aha.tech.config.mybatis.MybatisConfiguration;
 import com.github.pagehelper.PageInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

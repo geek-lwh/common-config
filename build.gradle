@@ -40,39 +40,43 @@ dependencies {
     compile("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
     compile("org.springframework.boot:spring-boot-autoconfigure:${springBootVersion}")
 
+    // spring cloud
+    compile("org.springframework.cloud:spring-cloud-starter-config:2.0.1.RELEASE")
+//    compile ("org.springframework.cloud:spring-cloud-starter-openfeign")
+
     // swagger dependency
     compile("io.swagger:swagger-annotations:1.5.16")
     compile("io.springfox:springfox-swagger2:2.8.0")
     compile("io.springfox:springfox-swagger-ui:2.8.0")
 
-//    // redis dependency
+    // redis dependency
     compile("org.springframework.boot:spring-boot-starter-data-redis:${springBootVersion}")
     compile("org.apache.commons:commons-pool2:2.5.0")
     compile ("org.redisson:redisson:3.9.1")
-//
-//    // kafka
-//    compile('org.springframework.kafka:spring-kafka')
-//
-//    // jdbc
+
+    // kafka
+    compile('org.springframework.kafka:spring-kafka:2.1.7.RELEASE')
+
+    // jdbc
     compile('hikari-cp:hikari-cp:2.6.0')
     compile('com.github.pagehelper:pagehelper-spring-boot-starter:1.2.5')
     compile('tk.mybatis:mapper-spring-boot-starter:2.0.3')
     compile('mysql:mysql-connector-java:5.1.46')
-//
-//    compileOnly 'org.projectlombok:lombok:1.18.2'
-//
-//    // http
-//    compile('org.apache.httpcomponents:httpclient:4.5.6')
-//    compile('org.apache.httpcomponents:httpcore:4.4.10')
-//
-//    // apollo config center
-//    compile('com.ctrip.framework.apollo:apollo-client:1.0.0')
-//
-//    // nacos register center
-//    compile('org.springframework.cloud:spring-cloud-starter-alibaba-nacos-discovery:0.9.0.RELEASE')
-//
-//    // metrics
-//    compile 'io.micrometer:micrometer-registry-prometheus'
+
+    compileOnly ("org.projectlombok:lombok:1.18.2")
+
+    // http
+    compile("org.apache.httpcomponents:httpclient:4.5.6")
+    compile("org.apache.httpcomponents:httpcore:4.4.10")
+
+    // apollo config center
+    compile("com.ctrip.framework.apollo:apollo-client:1.0.0")
+
+    // nacos register center
+    compile("org.springframework.cloud:spring-cloud-starter-alibaba-nacos-discovery:0.9.0.RELEASE")
+
+    // metrics
+    compile ("io.micrometer:micrometer-registry-prometheus:1.0.5")
 }
 
 //打包源码
@@ -83,7 +87,7 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 
 
 def name = 'aha-commons-config'
-version = '0.0.14'
+version = '0.1.0'
 def group = 'com.aha.public'
 
 //上传jar命令 gradle publish

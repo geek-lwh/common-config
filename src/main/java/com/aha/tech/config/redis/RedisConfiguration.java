@@ -28,7 +28,7 @@ import java.io.Serializable;
 @ConditionalOnProperty(name = "use.common.redis")
 public class RedisConfiguration {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RedisConfiguration.class);
+    private static final Logger logger = LoggerFactory.getLogger(RedisConfiguration.class);
 
     @Value("${common.redis.host:localhost}")
     public String host;
@@ -64,6 +64,7 @@ public class RedisConfiguration {
                 lettuceClientConfiguration(maxActive, maxIdle, minIdle, maxWait);
         RedisStandaloneConfiguration redisStandaloneConfiguration =
                 redisStandaloneConfiguration(host, port, password, database);
+
         return createLettuceConnectionFactory(redisStandaloneConfiguration, clientConfig);
     }
 
@@ -97,10 +98,11 @@ public class RedisConfiguration {
      * @return
      */
     private RedisStandaloneConfiguration redisStandaloneConfiguration(String host, Integer port, String password, Integer database) {
-        LOGGER.info(String.format("初始化公用redis ----> url : %s:%s,使用database [%s]", host, port, database));
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
         config.setPassword(RedisPassword.of(password));
         config.setDatabase(database);
+
+        logger.info("redis config init finish >> {}", config);
         return config;
     }
 
@@ -111,9 +113,11 @@ public class RedisConfiguration {
      * @param clientConfiguration
      * @return
      */
-    private LettuceConnectionFactory createLettuceConnectionFactory(RedisStandaloneConfiguration redisStandaloneConfiguration,
-                                                                    LettuceClientConfiguration clientConfiguration) {
-        return new LettuceConnectionFactory(redisStandaloneConfiguration, clientConfiguration);
+    private LettuceConnectionFactory createLettuceConnectionFactory(RedisStandaloneConfiguration redisStandaloneConfiguration, LettuceClientConfiguration clientConfiguration) {
+        LettuceConnectionFactory factory = new LettuceConnectionFactory(redisStandaloneConfiguration, clientConfiguration);
+        logger.info("lettuce connection factory init finish >> {}", factory);
+
+        return factory;
     }
 
 
@@ -133,6 +137,8 @@ public class RedisConfiguration {
         template.setHashValueSerializer(new FastJsonRedisSerializer(Object.class));
         template.setEnableDefaultSerializer(false);
         template.setConnectionFactory(redisConnectionFactory);
+
+        logger.info("redis template init finish >. {}", template);
         return template;
     }
 

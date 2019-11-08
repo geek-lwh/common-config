@@ -1,6 +1,5 @@
 package com.aha.tech.config.mybatis;
 
-import com.aha.tech.config.jdbc.JdbcConfiguration;
 import com.github.pagehelper.PageInterceptor;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -9,7 +8,6 @@ import org.mybatis.spring.SqlSessionTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +29,7 @@ import javax.sql.DataSource;
 @MapperScan(basePackages = {"com.aha.tech.repository.dao.readwrite"}, sqlSessionFactoryRef = "sqlSessionFactory")
 public class MybatisConfiguration {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MybatisConfiguration.class);
+    private  final Logger logger = LoggerFactory.getLogger(MybatisConfiguration.class);
 
     @Resource
     private DataSource dataSource;
@@ -43,11 +41,13 @@ public class MybatisConfiguration {
     @Primary
     @Bean(name = "sqlSessionFactory")
     public SqlSessionFactory sqlSessionFactory() throws Exception {
-        LOGGER.info("sqlSessionFactory init completed !");
         SqlSessionFactoryBean bean = new SqlSessionFactoryBean();
         bean.setDataSource(dataSource);
         bean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath*:mapper/readwrite/*Mapper.xml"));
+
         bean.setPlugins(new Interceptor[]{pageInterceptor});
+
+        logger.info("sql session factory init finish >> {}",bean);
         return bean.getObject();
     }
 
@@ -55,7 +55,10 @@ public class MybatisConfiguration {
     @Primary
     @Bean(name = "sqlSessionTemplate")
     public SqlSessionTemplate readwriteSqlSessionTemplate(@Qualifier("sqlSessionFactory") SqlSessionFactory sqlSessionFactory) {
-        return new SqlSessionTemplate(sqlSessionFactory);
+        SqlSessionTemplate sqlSessionTemplate = new SqlSessionTemplate(sqlSessionFactory);
+        logger.info("sql session factory init finish >> {}",sqlSessionFactory);
+
+        return sqlSessionTemplate;
     }
 
     /**
@@ -65,8 +68,11 @@ public class MybatisConfiguration {
      */
     @Primary
     @Bean(name = "transactionManager")
-    public DataSourceTransactionManager readwriteTransactionManager() {
-        return new DataSourceTransactionManager(dataSource);
+    public DataSourceTransactionManager transactionManager() {
+        DataSourceTransactionManager transactionManager = new DataSourceTransactionManager(dataSource);
+        logger.info("datasource transaction famanager init finish >> {}",transactionManager);
+
+        return transactionManager;
     }
 
 }

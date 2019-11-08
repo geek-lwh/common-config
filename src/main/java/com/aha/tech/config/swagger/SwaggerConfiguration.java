@@ -1,5 +1,7 @@
 package com.aha.tech.config.swagger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +22,9 @@ import static com.google.common.base.Predicates.or;
 @EnableSwagger2
 public class SwaggerConfiguration {
 
+    private static final Logger logger = LoggerFactory.getLogger(SwaggerConfiguration.class);
+
+
     @Value("${common.swagger.namespace:unKnown}")
     private String namespace;
 
@@ -37,16 +42,21 @@ public class SwaggerConfiguration {
 
     @Bean
     public Docket hjmServerApi() {
-//        ResolvedObjectType resolvedType = ResolvedObjectType.create(RpcResponse.class, null, null, null);
-        return new Docket(DocumentationType.SWAGGER_2).groupName(namespace)
+        Docket docket = new Docket(DocumentationType.SWAGGER_2).groupName(namespace)
                 .apiInfo(apiInfo())
                 .select().apis(or(RequestHandlerSelectors.basePackage(scanPackage)))
                 .paths(PathSelectors.any()).build();
+        logger.info("swagger docket init finish >> {}", docket);
+
+        return docket;
     }
 
     private ApiInfo apiInfo() {
-        return new ApiInfoBuilder().title(title).description(description)
+        ApiInfo apiInfoBuilder = new ApiInfoBuilder().title(title).description(description)
                 .version(version)// 版本显示
                 .build();
+
+        logger.info("swagger apiInfoBuilder init finish >> {}", apiInfoBuilder);
+        return apiInfoBuilder;
     }
 }
