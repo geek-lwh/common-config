@@ -20,16 +20,16 @@ import static com.google.common.base.Predicates.or;
 @EnableSwagger2
 public class SwaggerConfiguration {
 
-    @Value("${swagger.namespace:unKnown}")
+    @Value("${common.swagger.namespace:unKnown}")
     private String namespace;
 
-    @Value("${swagger.scan.package:com.aha.tech.controller}")
+    @Value("${common.swagger.scan.package:com.aha.tech.controller}")
     private String scanPackage;
 
-    @Value("${swagger.title:API文档}")
+    @Value("${common.swagger.title:API文档}")
     private String title;
 
-    @Value("${swagger.description:java服务}")
+    @Value("${common.swagger.description:java服务}")
     private String description;
 
     @Value("${swagger.version:2.0}")

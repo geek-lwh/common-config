@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
@@ -21,7 +22,6 @@ import javax.sql.DataSource;
  *
  * use.common.jdbc.datasource.enable 不配置默认使用基础组件提供的数据源配置
  */
-@Order(value = Integer.MIN_VALUE)
 @Configuration
 @ConditionalOnProperty(name = "use.common.jdbc")
 public class JdbcConfiguration {
@@ -31,7 +31,7 @@ public class JdbcConfiguration {
     @Value("${common.jdbc.driverClassName}")
     private String driverClassName;
 
-    @Value("${common.jdbc.url}")
+    @Value("${common.jdbc.jdbcUrl}")
     private String jdbcUrl;
 
     @Value("${common.jdbc.username}")
