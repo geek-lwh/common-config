@@ -57,6 +57,27 @@ public class RedisConfiguration {
     @Value("${common.redis.min-idle:5}")
     public Integer minIdle;
 
+    /**
+     * 自定义redis序列化 使用fast json
+     * @param redisConnectionFactory
+     * @return
+     */
+    @Primary
+    @Bean
+    public RedisTemplate<String, Serializable> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
+        //设置序列化
+        RedisTemplate<String, Serializable> template = new RedisTemplate<>();
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new FastJsonRedisSerializer(Object.class));
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(new FastJsonRedisSerializer(Object.class));
+        template.setEnableDefaultSerializer(false);
+        template.setConnectionFactory(redisConnectionFactory);
+
+        logger.info("redis template init finish >. {}", template);
+        return template;
+    }
+
     @Primary
     @Bean(name = "redisConnectionFactory")
     public LettuceConnectionFactory publicRedisConnectionFactory() {
@@ -118,28 +139,6 @@ public class RedisConfiguration {
         logger.info("lettuce connection factory init finish >> {}", factory);
 
         return factory;
-    }
-
-
-    /**
-     * 自定义redis序列化 使用fast json
-     * @param redisConnectionFactory
-     * @return
-     */
-    @Primary
-    @Bean
-    public RedisTemplate<String, Serializable> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        //设置序列化
-        RedisTemplate<String, Serializable> template = new RedisTemplate<>();
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new FastJsonRedisSerializer(Object.class));
-        template.setHashKeySerializer(new StringRedisSerializer());
-        template.setHashValueSerializer(new FastJsonRedisSerializer(Object.class));
-        template.setEnableDefaultSerializer(false);
-        template.setConnectionFactory(redisConnectionFactory);
-
-        logger.info("redis template init finish >. {}", template);
-        return template;
     }
 
 }

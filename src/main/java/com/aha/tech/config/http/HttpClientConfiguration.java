@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -64,6 +65,7 @@ public class HttpClientConfiguration {
      * http池化管理,支持https
      * @return
      */
+    @Primary
     @Bean
     public PoolingHttpClientConnectionManager poolingConnectionManager() {
         SSLContextBuilder builder = new SSLContextBuilder();
@@ -101,6 +103,7 @@ public class HttpClientConfiguration {
      * 如果有timeout则以response的值为准,如果没有timeout则取默认值
      * @return
      */
+    @Primary
     @Bean
     public ConnectionKeepAliveStrategy connectionKeepAliveStrategy() {
         return (response, context) -> {
@@ -125,6 +128,7 @@ public class HttpClientConfiguration {
      * 系统初始化默认的httpclient
      * @return
      */
+    @Primary
     @Bean
     public CloseableHttpClient defaultCloseableHttpClient() {
         RequestConfig requestConfig = RequestConfig.custom()
@@ -149,6 +153,7 @@ public class HttpClientConfiguration {
      * @param connectionManager
      * @return
      */
+    @Primary
     @Bean
     public Runnable idleConnectionMonitor(final PoolingHttpClientConnectionManager connectionManager) {
         return () -> {

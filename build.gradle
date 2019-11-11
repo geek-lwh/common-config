@@ -55,13 +55,13 @@ dependencies {
     compile ("org.redisson:redisson:3.9.1")
 
     // kafka
-    compile('org.springframework.kafka:spring-kafka:2.1.7.RELEASE')
+    compile("org.springframework.kafka:spring-kafka:2.1.7.RELEASE")
 
     // jdbc
-    compile('hikari-cp:hikari-cp:2.6.0')
-    compile('com.github.pagehelper:pagehelper-spring-boot-starter:1.2.5')
-    compile('tk.mybatis:mapper-spring-boot-starter:2.0.3')
-    compile('mysql:mysql-connector-java:5.1.46')
+    compile("hikari-cp:hikari-cp:2.6.0")
+    compile("com.github.pagehelper:pagehelper-spring-boot-starter:1.2.5")
+    compile("tk.mybatis:mapper-spring-boot-starter:2.0.3")
+    compile("mysql:mysql-connector-java:5.1.46")
 
     compileOnly ("org.projectlombok:lombok:1.18.2")
 
@@ -87,7 +87,7 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 
 
 def name = 'aha-commons-config'
-version = '0.1.0'
+version = '0.2.6'
 def group = 'com.aha.public'
 
 //上传jar命令 gradle publish

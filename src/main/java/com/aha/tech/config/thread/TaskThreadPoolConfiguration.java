@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /**
@@ -16,7 +17,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 @ConditionalOnProperty(name = "use.common.task.thread", matchIfMissing = true)
 public class TaskThreadPoolConfiguration {
 
-    private static final Logger logger = LoggerFactory.getLogger(TaskThreadPoolConfiguration.class);
+    private Logger logger = LoggerFactory.getLogger(TaskThreadPoolConfiguration.class);
 
     @Value("${common.task.pool.size:10}")
     private Integer poolSize;
@@ -26,6 +27,7 @@ public class TaskThreadPoolConfiguration {
      * 只要有@scheduler标签则会使用该线程池
      * @return
      */
+    @Primary
     @Bean
     public ThreadPoolTaskScheduler taskScheduler() {
         ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();

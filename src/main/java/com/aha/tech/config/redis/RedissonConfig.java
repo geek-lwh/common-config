@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 
 /**
@@ -50,6 +51,7 @@ public class RedissonConfig {
     @Value("${common.redis.min-idle:5}")
     public Integer minIdle;
 
+    @Primary
     @Bean
     public RedissonClient redissonClient() {
         Config config = new Config();
