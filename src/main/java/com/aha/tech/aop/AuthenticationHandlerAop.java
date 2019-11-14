@@ -2,7 +2,8 @@ package com.aha.tech.aop;
 
 import com.aha.tech.anotation.Authentication;
 import com.aha.tech.exception.AuthenticationFailedException;
-import com.aha.tech.util.BeanUtil;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
@@ -18,9 +19,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -77,16 +77,15 @@ public class AuthenticationHandlerAop {
      */
     private void verifyBody(JoinPoint joinPoint) {
         Object[] paramsArray = joinPoint.getArgs();
-        Object param = paramsArray[0];
-        List<Object> list = new ArrayList<>();
-        if (param instanceof List) {
-            list.addAll((Collection<?>) param);
-        } else {
-            list.add(param);
+        if(paramsArray.length <= 0){
+            logger.error("校验userId出现异常");
+            throw new AuthenticationFailedException();
         }
 
-        for (Object obj : list) {
-            Map<String, Object> body = BeanUtil.convertObjToMap(obj);
+        Object param = paramsArray[0];
+        List<Object> list = Lists.newArrayList(param);
+        list.forEach( obj -> {
+            Map<String, Object> body = this.convertObjToMap(obj);
             if (!body.containsKey(USER_FILED)) {
                 throw new AuthenticationFailedException();
             }
@@ -95,7 +94,8 @@ public class AuthenticationHandlerAop {
             if (userId == null || userId <= 0l) {
                 throw new AuthenticationFailedException();
             }
-        }
+        });
+
     }
 
     /**
@@ -113,4 +113,29 @@ public class AuthenticationHandlerAop {
         }
     }
 
+    /**
+     * obj转map
+     * @param obj
+     * @return
+     */
+    private static Map<String, Object> convertObjToMap(Object obj) {
+        Map<String, Object> reMap = Maps.newHashMap();
+        if (obj == null) return null;
+        Field[] fields = obj.getClass().getDeclaredFields();
+        try {
+            for (int i = 0; i < fields.length; i++) {
+                try {
+                    Field f = obj.getClass().getDeclaredField(fields[i].getName());
+                    f.setAccessible(true);
+                    Object o = f.get(obj);
+                    reMap.put(fields[i].getName(), o);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        }
+        return reMap;
+    }
 }

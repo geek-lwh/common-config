@@ -1,9 +1,17 @@
 buildscript {
+    ext {
+        springBootVersion = '2.0.3.RELEASE'
+    }
+
     repositories {
         mavenLocal()
         maven {
             url 'http://testm.ahaschool.com:9200/nexus/content/groups/public/'
         }
+    }
+
+    dependencies {
+        classpath("io.spring.gradle:dependency-management-plugin:1.0.5.RELEASE")
     }
 }
 
@@ -12,7 +20,7 @@ apply plugin: 'idea'
 apply plugin: 'eclipse'
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
-
+apply plugin: 'io.spring.dependency-management'
 
 repositories {
     mavenLocal()
@@ -25,6 +33,13 @@ repositories {
         maven { url 'https://jitpack.io' }
     }
 }
+
+dependencyManagement {
+    imports {
+        mavenBom 'org.springframework.cloud:spring-cloud-dependencies:Finchley.RELEASE'
+    }
+}
+
 def springBootVersion = '2.0.3.RELEASE'
 
 dependencies {
@@ -42,10 +57,9 @@ dependencies {
 
     // spring cloud
     compile("org.springframework.cloud:spring-cloud-starter-config:2.0.1.RELEASE")
-//    compile ("org.springframework.cloud:spring-cloud-starter-openfeign")
+    compile ("org.springframework.cloud:spring-cloud-starter-openfeign")
 
     // swagger dependency
-    compile("io.swagger:swagger-annotations:1.5.16")
     compile("io.springfox:springfox-swagger2:2.8.0")
     compile("io.springfox:springfox-swagger-ui:2.8.0")
 
@@ -87,7 +101,7 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 
 
 def name = 'aha-commons-config'
-version = '0.2.9'
+version = '0.4.3'
 def group = 'com.aha.public'
 
 //上传jar命令 gradle publish
