@@ -26,7 +26,6 @@ import javax.sql.DataSource;
  */
 @Configuration
 @ConditionalOnProperty(name = "use.common.jdbc")
-//@MapperScan(basePackages = {"com.aha.tech.repository.dao.readwrite"}, sqlSessionFactoryRef = "sqlSessionFactory")
 public class MybatisConfiguration {
 
     private  final Logger logger = LoggerFactory.getLogger(MybatisConfiguration.class);
