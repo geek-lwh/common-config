@@ -26,7 +26,7 @@ import javax.sql.DataSource;
  */
 @Configuration
 @ConditionalOnProperty(name = "use.common.jdbc")
-@MapperScan(basePackages = {"com.aha.tech.repository.dao.readwrite"}, sqlSessionFactoryRef = "sqlSessionFactory")
+//@MapperScan(basePackages = {"com.aha.tech.repository.dao.readwrite"}, sqlSessionFactoryRef = "sqlSessionFactory")
 public class MybatisConfiguration {
 
     private  final Logger logger = LoggerFactory.getLogger(MybatisConfiguration.class);
@@ -54,7 +54,7 @@ public class MybatisConfiguration {
 
     @Primary
     @Bean(name = "sqlSessionTemplate")
-    public SqlSessionTemplate readwriteSqlSessionTemplate(@Qualifier("sqlSessionFactory") SqlSessionFactory sqlSessionFactory) {
+    public SqlSessionTemplate sqlSessionTemplate(@Qualifier("sqlSessionFactory") SqlSessionFactory sqlSessionFactory) {
         SqlSessionTemplate sqlSessionTemplate = new SqlSessionTemplate(sqlSessionFactory);
         logger.info("sql session factory init finish >> {}",sqlSessionFactory);
 

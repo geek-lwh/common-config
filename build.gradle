@@ -68,10 +68,10 @@ dependencies {
     compile("org.apache.commons:commons-pool2:2.5.0")
     compile ("org.redisson:redisson:3.9.1")
 
-    // kafka
+    // kafka dependency
     compile("org.springframework.kafka:spring-kafka:2.1.7.RELEASE")
 
-    // jdbc
+    // jdbc dependency
     compile("hikari-cp:hikari-cp:2.6.0")
     compile("com.github.pagehelper:pagehelper-spring-boot-starter:1.2.5")
     compile("tk.mybatis:mapper-spring-boot-starter:2.0.3")
@@ -101,7 +101,7 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 
 
 def name = 'aha-commons-config'
-version = '0.4.3'
+version = '0.6.2'
 def group = 'com.aha.public'
 
 //上传jar命令 gradle publish

@@ -1,4 +1,4 @@
-package com.aha.tech.intereptor;
+package com.aha.tech.interceptor;
 
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
