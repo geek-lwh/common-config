@@ -23,7 +23,7 @@ public class ResponseWrapper extends HttpServletResponseWrapper {
         super(resp);
         buffer = new ByteArrayOutputStream();// 真正存储数据的流
         out = new WapperedOutputStream(buffer);
-        writer = new PrintWriter(new OutputStreamWriter(buffer, this.getCharacterEncoding()));
+        writer = new PrintWriter(new OutputStreamWriter(buffer, "utf-8"));
     }
 
     /** 重载父类获取outputstream的方法 */

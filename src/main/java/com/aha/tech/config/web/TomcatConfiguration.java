@@ -32,7 +32,7 @@ public class TomcatConfiguration {
     private String port;
 
     // contextPath
-    @Value("${common.server.tomcat.contextPath:}")
+    @Value("${common.server.tomcat.contextPath:/}")
     private String contextPath;
 
     // 指定当所有可以使用的处理请求的线程数都被使用时，可以放到处理队列中的请求数，超过这个数的请求将不予处理
