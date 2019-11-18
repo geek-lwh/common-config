@@ -53,6 +53,10 @@ public class FeignRequestInterceptor implements RequestInterceptor {
 
     public static final String CHARSET_ENCODING = Charset.defaultCharset().name();
 
+    public static final String X_TOKEN_KEY = "X-TOKEN";
+
+    public static final String X_TOKEN = "3p1vN4urMs1X2fyMUM0KkhlwoIms04";
+
 
     @Override
     public void apply(RequestTemplate requestTemplate) {
@@ -75,6 +79,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         requestTemplate.header(HTTP_HEADER_KEEP_ALIVE_KEY, HTTP_HEADER_KEEP_ALIVE_VALUE);
         requestTemplate.header(HTTP_HEADER_X_REQUESTED_WITH_KEY, HTTP_HEADER_X_REQUESTED_WITH_VALUE);
         requestTemplate.header(CONTENT_ENCODING, CHARSET_ENCODING);
+        requestTemplate.header(X_TOKEN_KEY, X_TOKEN);//调用php接口需要这个头
 
         StringBuilder sb = new StringBuilder(System.lineSeparator());
         sb.append("Feign request URI : ").append(requestTemplate.url()).append(System.lineSeparator());

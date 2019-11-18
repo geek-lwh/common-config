@@ -29,7 +29,6 @@ public class WebConfiguration implements WebMvcConfigurer {
 
     private static final Logger logger = LoggerFactory.getLogger(WebConfiguration.class);
 
-
     @Resource
     private ObjectMapper objectMapper;
 
@@ -46,4 +45,5 @@ public class WebConfiguration implements WebMvcConfigurer {
         converters.add(webMessageConverter);
         logger.info("web http message converter init finish >> {} ",webMessageConverter);
     }
+
 }

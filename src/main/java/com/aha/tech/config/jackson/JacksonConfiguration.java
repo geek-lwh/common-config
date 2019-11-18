@@ -13,6 +13,7 @@ import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -34,6 +35,7 @@ import java.util.TimeZone;
  * @Date: 2018/12/14
  */
 @Configuration
+@ConditionalOnProperty(name = "use.common.jackson",matchIfMissing = true)
 public class JacksonConfiguration {
 
     public final Logger logger = LoggerFactory.getLogger(JacksonConfiguration.class);
