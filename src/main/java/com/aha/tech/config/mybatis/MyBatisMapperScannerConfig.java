@@ -20,7 +20,7 @@
 //    @Bean
 //    public MapperScannerConfigurer mapperScannerConfigurer() throws IOException {
 //        MapperScannerConfigurer mapperScannerConfigurer = new MapperScannerConfigurer();
-//        mapperScannerConfigurer.setSqlSessionFactoryBeanName("asqlSessionFactory");
+//        mapperScannerConfigurer.setSqlSessionFactoryBeanName("sqlSessionFactory");
 //        Properties properties = PropertiesLoaderUtils.loadAllProperties("application.properties");
 //        String basePackage = properties.getOrDefault("mybatis.scan.base.package","com.aha.tech.repository.dao.readwrite").toString();
 //        mapperScannerConfigurer.setBasePackage(basePackage);

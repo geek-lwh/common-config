@@ -91,6 +91,8 @@ dependencies {
 
     // metrics
     compile ("io.micrometer:micrometer-registry-prometheus:1.0.5")
+    // cat
+    compile ("com.dianping.cat:cat-client:3.0.0")
 }
 
 //打包源码
@@ -101,7 +103,7 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 
 
 def name = 'aha-commons-config'
-version = '1.1.0'
+version = '1.1.5'
 def group = 'com.aha.public'
 
 //上传jar命令 gradle publish
