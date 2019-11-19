@@ -1,37 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true">
-
-    <!-- console 字体 配置 -->
-    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
-    <conversionRule conversionWord="wex" converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
-    <conversionRule conversionWord="wEx"
-                    converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter"/>
-    <property name="CONSOLE_LOG_PATTERN"
-              value="${CONSOLE_LOG_PATTERN:-%clr(%date){faint} %clr(%level) %clr([%t{30}]){magenta} %clr(%c{10}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}"/>
-
     <!-- console 配置 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <pattern>%blue([%X{traceId}]) %green(%date) %highlight(%level) %boldMagenta([%thread]) %cyan([%C{10}]) : %msg%n</pattern>
+            <charset>UTF-8</charset>
         </encoder>
     </appender>
 
     <!-- 需要特别屏蔽的日志,例如kafka频繁的debug信息 -->
     <logger name="org.apache.kafka" level="INFO"/>
 
-
-    <!-- 引入项目核心配置 -->
-    <!--<include resource="logback-base.xml"/>-->
-    <property name="FILE_PATTERN" value="%date %level [%thread][%c] : %msg%n"/>
-    <!--<property name="PROJECT_NAME" value="accountserver"/>-->
+    <property name="FILE_PATTERN" value="[%X{traceId}] %date %level [%thread] [%c] : %msg%n"/>
     <springProperty scope="context" name="PROJECT_NAME" source="app.id" defaultValue="unknown_application" />
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>/data/log/${PROJECT_NAME}/service.log</file>
-        <encoder>
+        <layout class="ch.qos.logback.classic.PatternLayout">
             <pattern>${FILE_PATTERN}</pattern>
-            <charset>UTF-8</charset>
-        </encoder>
+        </layout>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>/data/log/${PROJECT_NAME}/history/service-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
             <MaxHistory>90</MaxHistory>
@@ -42,10 +29,9 @@
 
     <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>/data/log/${PROJECT_NAME}/service-error.log</file>
-        <encoder>
+        <layout class="ch.qos.logback.classic.PatternLayout">
             <pattern>${FILE_PATTERN}</pattern>
-            <charset>UTF-8</charset>
-        </encoder>
+        </layout>
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>error</level>
             <onMatch>ACCEPT</onMatch>

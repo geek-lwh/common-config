@@ -25,7 +25,7 @@ public class DataSourceConfiguration {
 
     public  final Logger logger = LoggerFactory.getLogger(DataSourceConfiguration.class);
 
-    @Value("${common.jdbc.driverClassName}")
+    @Value("${common.jdbc.driverClassName:com.mysql.jdbc.Driver}")
     private String driverClassName;
 
     @Value("${common.jdbc.jdbcUrl}")
@@ -37,16 +37,16 @@ public class DataSourceConfiguration {
     @Value("${common.jdbc.password}")
     private String password;
 
-    @Value("${common.jdbc.connectionTimeout}")
+    @Value("${common.jdbc.connectionTimeout:5000}")
     private Long connectionTimeout;
 
-    @Value("${common.jdbc.idleTimeout}")
+    @Value("${common.jdbc.idleTimeout:600000}")
     private Long idleTimeout;
 
-    @Value("${common.jdbc.maximumPoolSize}")
+    @Value("${common.jdbc.maximumPoolSize:50}")
     private Integer maximumPoolSize;
 
-    @Value("${common.jdbc.minimumIdle}")
+    @Value("${common.jdbc.minimumIdle:10}")
     private Integer minimumIdle;
 
     @Primary
