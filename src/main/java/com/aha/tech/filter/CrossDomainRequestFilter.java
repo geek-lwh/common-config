@@ -33,7 +33,6 @@ public class CrossDomainRequestFilter extends OncePerRequestFilter {
         response.setHeader("Access-Control-Allow-Headers", "x-requested-with,Content-Type");
 
         filterChain.doFilter(request, response);
-        System.out.print("asdasd");
     }
 
 }
