@@ -13,7 +13,6 @@ import org.springframework.core.annotation.Order;
  * @Author: luweihong
  * @Date: 2019/11/19
  */
-@Order(0)
 @Configuration
 @ConditionalOnProperty(name = "use.common.cat")
 public class CatFilterConfiguration {

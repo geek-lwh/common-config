@@ -61,7 +61,7 @@ public class FeignHystrixComponent extends HystrixConcurrencyStrategy {
     private void logCurrentStateOfHystrixPlugins(HystrixEventNotifier eventNotifier,
                                                  HystrixMetricsPublisher metricsPublisher, HystrixPropertiesStrategy propertiesStrategy) {
         if (logger.isDebugEnabled()) {
-            logger.debug("Current Hystrix plugins configuration is [" + "concurrencyStrategy ["
+            logger.debug("Current Hystrix plugin configuration is [" + "concurrencyStrategy ["
                     + this.delegate + "]," + "eventNotifier [" + eventNotifier + "]," + "metricPublisher ["
                     + metricsPublisher + "]," + "propertiesStrategy [" + propertiesStrategy + "]," + "]");
             logger.debug("Registering Sleuth Hystrix Concurrency Strategy.");
