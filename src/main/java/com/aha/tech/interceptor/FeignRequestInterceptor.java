@@ -1,16 +1,20 @@
 package com.aha.tech.interceptor;
 
+import com.google.common.collect.Lists;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
+import java.util.List;
 
 /**
  * @Author: luweihong
@@ -51,11 +55,13 @@ public class FeignRequestInterceptor implements RequestInterceptor {
 
     public static final String CONTENT_ENCODING = "Content-Encoding";
 
-    public static final String CHARSET_ENCODING = Charset.defaultCharset().name();
+    public static final String CHARSET_ENCODING = StandardCharsets.UTF_8.displayName();
 
     public static final String X_TOKEN_KEY = "X-TOKEN";
 
     public static final String X_TOKEN = "3p1vN4urMs1X2fyMUM0KkhlwoIms04";
+
+    public static final String ACCEPT = "accept";
 
 
     @Override
@@ -73,13 +79,29 @@ public class FeignRequestInterceptor implements RequestInterceptor {
             requestTemplate.header(k, v);
         }
 
-        //requestTemplate.header(AUTHORIZATION_KEY, BASIC_AUTHORIZATION);
+//        CatContext catContext = new CatContext();
+//        Cat.logRemoteCallClient(catContext,Cat.getManager().getDomain());
+//
+//        requestTemplate.header(CAT_HTTP_HEADER_ROOT_MESSAGE_ID,catContext.getProperty(Cat.Context.ROOT));
+//        requestTemplate.header(CAT_HTTP_HEADER_PARENT_MESSAGE_ID,catContext.getProperty(Cat.Context.PARENT));
+//        requestTemplate.header(CAT_HTTP_HEADER_CHILD_MESSAGE_ID,catContext.getProperty(Cat.Context.CHILD));
+
+
         requestTemplate.header(CONTENT_TYPE, APPLICATION_JSON_UTF8);
+        List<String> acceptableMediaTypes = Lists.newArrayList(
+                MediaType.APPLICATION_JSON.toString(),
+                MediaType.APPLICATION_JSON_UTF8.toString(),
+                MediaType.APPLICATION_XML.toString(),
+                MediaType.TEXT_PLAIN.toString(),
+                MediaType.APPLICATION_FORM_URLENCODED.toString(),
+                MediaType.APPLICATION_OCTET_STREAM.toString());
+
+        requestTemplate.header(ACCEPT, acceptableMediaTypes);
         requestTemplate.header(CONNECTION, HTTP_HEADER_CONNECTION_VALUE);
         requestTemplate.header(HTTP_HEADER_KEEP_ALIVE_KEY, HTTP_HEADER_KEEP_ALIVE_VALUE);
         requestTemplate.header(HTTP_HEADER_X_REQUESTED_WITH_KEY, HTTP_HEADER_X_REQUESTED_WITH_VALUE);
         requestTemplate.header(CONTENT_ENCODING, CHARSET_ENCODING);
-        requestTemplate.header(X_TOKEN_KEY, X_TOKEN);//调用php接口需要这个头
+        requestTemplate.header(X_TOKEN_KEY, X_TOKEN);
 
         StringBuilder sb = new StringBuilder(System.lineSeparator());
         sb.append("Feign request URI : ").append(requestTemplate.url()).append(System.lineSeparator());

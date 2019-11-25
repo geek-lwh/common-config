@@ -77,8 +77,8 @@ public class HttpInterceptor implements ClientHttpRequestInterceptor {
         HttpHeaders headers = request.getHeaders();
 
         List<MediaType> acceptableMediaTypes = Lists.newArrayList(
-                MediaType.APPLICATION_XML,
                 MediaType.APPLICATION_JSON,
+                MediaType.APPLICATION_XML,
                 MediaType.TEXT_PLAIN,
                 MediaType.APPLICATION_JSON_UTF8,
                 MediaType.APPLICATION_FORM_URLENCODED,

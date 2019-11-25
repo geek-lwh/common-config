@@ -23,17 +23,17 @@ public class CatContextFilter implements Filter {
     public static final String CAT_HTTP_HEADER_PARENT_MESSAGE_ID = "X-CAT-PARENT-MESSAGE-ID";
 
     public static final String CAT_HTTP_HEADER_ROOT_MESSAGE_ID = "X-CAT-ROOT-MESSAGE-ID";
-
-    public static String applicationName = "";
-
-    static {
-        try {
-            Properties properties = PropertiesLoaderUtils.loadAllProperties("application.properties");
-            applicationName = properties.getProperty("app.id", "default");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+//
+//    public static String applicationName = "";
+//
+//    static {
+//        try {
+//            Properties properties = PropertiesLoaderUtils.loadAllProperties("application.properties");
+//            applicationName = properties.getProperty("app.id", "default");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     @Override
     public void init(FilterConfig filterConfig) {
@@ -49,7 +49,7 @@ public class CatContextFilter implements Filter {
         catContext.addProperty(Cat.Context.CHILD, request.getHeader(CAT_HTTP_HEADER_CHILD_MESSAGE_ID));
         if (catContext.getProperty(Cat.Context.ROOT) == null) {
             // 当前项目的app.id
-            Cat.logRemoteCallClient(catContext, applicationName);
+            Cat.logRemoteCallClient(catContext, Cat.getManager().getDomain());
         } else {
             Cat.logRemoteCallServer(catContext);
         }

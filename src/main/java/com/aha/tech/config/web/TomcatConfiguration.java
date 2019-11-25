@@ -64,7 +64,7 @@ public class TomcatConfiguration {
     private String redirectPort;
 
     // 给Tomcat配置gzip压缩(HTTP压缩)功能
-    @Value("${common.server.tomcat.compression:on}")
+    @Value("${common.server.tomcat.compression:off}")
     private String compression;
 
     // 报文超过多少压缩
