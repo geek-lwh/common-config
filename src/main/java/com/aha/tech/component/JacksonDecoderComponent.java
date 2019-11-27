@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Type;
@@ -19,7 +18,7 @@ import java.util.Collections;
 import java.util.zip.GZIPInputStream;
 
 @Component
-public class JacksonDecoder implements Decoder {
+public class JacksonDecoderComponent implements Decoder {
 
     @Resource
     private ObjectMapper objectMapper;

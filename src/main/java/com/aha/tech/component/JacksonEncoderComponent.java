@@ -17,7 +17,7 @@ import javax.annotation.Resource;
 import java.lang.reflect.Type;
 
 @Component
-public class JacksonEncoder implements Encoder {
+public class JacksonEncoderComponent implements Encoder {
 
     @Resource
     private ObjectMapper objectMapper;

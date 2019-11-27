@@ -1,18 +1,14 @@
 package com.aha.tech.config.web;
 
-import com.aha.tech.config.thread.TaskThreadPoolConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.annotation.Resource;
@@ -46,11 +42,6 @@ public class WebConfiguration implements WebMvcConfigurer {
         MappingJackson2HttpMessageConverter webMessageConverter = mappingJackson2HttpMessageConverter();
         converters.add(webMessageConverter);
         logger.info("web http message converter init finish >> {} ",webMessageConverter);
-    }
-
-    @Override
-    public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-        configurer.defaultContentType(MediaType.APPLICATION_JSON);
     }
 
 }

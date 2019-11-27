@@ -1,13 +1,10 @@
 package com.aha.tech.config.cat;
 
 import com.aha.tech.filter.CatContextFilter;
-import com.dianping.cat.Cat;
-import com.dianping.cat.servlet.CatFilter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
 
 /**
  * @Author: luweihong

@@ -30,56 +30,56 @@ public class RequestResponseLogFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        RequestWrapper requestWrapper = null;
-        if (request instanceof HttpServletRequest) {
-            requestWrapper = new RequestWrapper(request);
-        }
+        String uri = request.getRequestURI();
 
-        StringBuilder requestLog = new StringBuilder(System.lineSeparator());
-        String uri = requestWrapper.getRequestURI();
-
-        Enumeration<String> headers = requestWrapper.getHeaderNames();
-
-        requestLog.append("uri : ").append(uri).append(System.lineSeparator());
-        requestLog.append("header : ").append(System.lineSeparator());
-        while (headers.hasMoreElements()) {
-            String k = headers.nextElement();
-            String v = requestWrapper.getHeader(k);
-            requestLog.append(k).append("=").append(v).append(System.lineSeparator());
-        }
-
-        requestLog.append("body : ").append(System.lineSeparator());
-
-        if (requestWrapper != null) {
-            BufferedReader bufferedReader = requestWrapper.getReader();
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                requestLog.append(line);
-            }
-        }
-
-        logger.info("{}", requestLog);
-
-        ResponseWrapper responseWrapper = new ResponseWrapper(response);
-
-        if (null == requestWrapper) {
+        if (uri.contains("swagger-") || uri.contains("api-docs") || uri.contains("favicon") || uri.contains("prometheus")) {
             filterChain.doFilter(request, response);
         } else {
-            filterChain.doFilter(requestWrapper, responseWrapper);
+            RequestWrapper requestWrapper = new RequestWrapper(request);
+            ResponseWrapper responseWrapper = new ResponseWrapper(response);
+
+            StringBuilder requestLog = new StringBuilder(System.lineSeparator());
+            Enumeration<String> headers = requestWrapper.getHeaderNames();
+
+            requestLog.append("uri : ").append(uri).append(System.lineSeparator());
+            requestLog.append("header : ").append(System.lineSeparator());
+            while (headers.hasMoreElements()) {
+                String k = headers.nextElement();
+                String v = requestWrapper.getHeader(k);
+                requestLog.append(k).append("=").append(v).append(System.lineSeparator());
+            }
+
+            requestLog.append("body : ").append(System.lineSeparator());
+
+            if (requestWrapper != null) {
+                BufferedReader bufferedReader = requestWrapper.getReader();
+                String line;
+                while ((line = bufferedReader.readLine()) != null) {
+                    requestLog.append(line);
+                }
+            }
+
+            logger.info("{}", requestLog);
+
+            if (null == requestWrapper) {
+                filterChain.doFilter(request, response);
+            } else {
+                filterChain.doFilter(requestWrapper, responseWrapper);
+            }
+
+            String result = new String(responseWrapper.getResponseData());
+            ServletOutputStream outputStream = response.getOutputStream();
+            outputStream.write(result.getBytes());
+            outputStream.flush();
+            outputStream.close();
+            // 打印response
+            StringBuilder responseLog = new StringBuilder(System.lineSeparator());
+            responseLog.append("response status : ").append(responseWrapper.getStatus()).append(System.lineSeparator());
+            responseLog.append("response body : ").append(System.lineSeparator());
+            responseLog.append(result);
+
+            logger.info("{}", responseLog);
         }
-
-        String result = new String(responseWrapper.getResponseData());
-        ServletOutputStream outputStream = response.getOutputStream();
-        outputStream.write(result.getBytes());
-        outputStream.flush();
-        outputStream.close();
-        // 打印response
-        StringBuilder responseLog = new StringBuilder(System.lineSeparator());
-        responseLog.append("response status : ").append(responseWrapper.getStatus()).append(System.lineSeparator());
-        responseLog.append("response body : ").append(System.lineSeparator());
-        responseLog.append(result);
-
-        logger.info("{}", responseLog);
     }
 
 }
