@@ -8,6 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @Author: luweihong
@@ -23,22 +24,19 @@ public class ResponseWrapper extends HttpServletResponseWrapper {
         super(resp);
         buffer = new ByteArrayOutputStream();// 真正存储数据的流
         out = new WapperedOutputStream(buffer);
-        writer = new PrintWriter(new OutputStreamWriter(buffer, "utf-8"));
+        writer = new PrintWriter(new OutputStreamWriter(buffer, StandardCharsets.UTF_8.name()));
     }
 
-    /** 重载父类获取outputstream的方法 */
     @Override
     public ServletOutputStream getOutputStream() {
         return out;
     }
 
-    /** 重载父类获取writer的方法 */
     @Override
     public PrintWriter getWriter() {
         return writer;
     }
 
-    /** 重载父类获取flushBuffer的方法 */
     @Override
     public void flushBuffer() throws IOException {
         if (out != null) {
@@ -59,7 +57,6 @@ public class ResponseWrapper extends HttpServletResponseWrapper {
         return buffer.toByteArray();
     }
 
-    /** 内部类，对ServletOutputStream进行包装 */
     private class WapperedOutputStream extends ServletOutputStream {
         private ByteArrayOutputStream bos;
 

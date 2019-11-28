@@ -1,19 +1,15 @@
 package com.aha.tech.filter.wrapper;
 
-import jodd.io.StreamUtil;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.io.IOUtils;
 
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.util.Enumeration;
 
 /**
  * @Author: luweihong
@@ -24,33 +20,8 @@ public class RequestWrapper extends HttpServletRequestWrapper {
 
     public RequestWrapper(HttpServletRequest request) throws IOException {
         super(request);
-        body = getBodyString(request);
+        body = IOUtils.toByteArray(request.getInputStream());
     }
-
-    /**
-     * 获取请求Body
-     *
-     * @param request
-     * @return
-     */
-    public byte[] getBodyString(final ServletRequest request) throws IOException {
-        String contentType = request.getContentType();
-        String bodyString = "";
-
-        if (StringUtils.isNotBlank(contentType) && (contentType.contains("multipart/form-data") || contentType.contains("x-www-form-urlencoded"))) {
-            Enumeration<String> pars = request.getParameterNames();
-            while (pars.hasMoreElements()) {
-                String n = pars.nextElement();
-                bodyString += n + "=" + request.getParameter(n) + "&";
-            }
-            bodyString = bodyString.endsWith("&") ? bodyString.substring(0, bodyString.length() - 1) : bodyString;
-
-            return bodyString.getBytes(Charset.forName("UTF-8"));
-        } else {
-            return StreamUtil.readBytes(request.getReader(), "UTF-8");
-        }
-    }
-
 
     @Override
     public BufferedReader getReader() {
@@ -59,7 +30,7 @@ public class RequestWrapper extends HttpServletRequestWrapper {
 
     @Override
     public ServletInputStream getInputStream() {
-        final ByteArrayInputStream bais = new ByteArrayInputStream(body);
+        final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(body);
         return new ServletInputStream() {
             @Override
             public boolean isFinished() {
@@ -73,12 +44,11 @@ public class RequestWrapper extends HttpServletRequestWrapper {
 
             @Override
             public void setReadListener(ReadListener listener) {
-
             }
 
             @Override
             public int read() {
-                return bais.read();
+                return byteArrayInputStream.read();
             }
         };
     }
