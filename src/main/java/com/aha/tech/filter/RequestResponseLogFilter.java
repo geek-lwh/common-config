@@ -32,7 +32,7 @@ public class RequestResponseLogFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String uri = request.getRequestURI();
 
-        if (uri.contains("swagger-") || uri.contains("api-docs") || uri.contains("favicon") || uri.contains("prometheus")) {
+        if (uri.contains("prometheus") || uri.contains("webjars") || uri.contains("swagger") || uri.contains("api-docs") || uri.contains("favicon")) {
             filterChain.doFilter(request, response);
         } else {
             RequestWrapper requestWrapper = new RequestWrapper(request);
