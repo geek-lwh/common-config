@@ -6,9 +6,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * 说明:http head 参数 </br>
@@ -81,7 +78,7 @@ public class XEnvDto {
     private String equipment;//设备类型 值定义:ipad iphone
 
     public XEnvDto(HttpServletRequest request) {
-        this.traceId = request.getHeader("x-trace-id");
+        this.traceId = request.getHeader("x-trace-root-id");
         this.token = request.getHeader("x-token");
         this.utmSource = request.getHeader("x-env-utm-source");
         this.utmMedium = request.getHeader("x-env-utm-medium");
@@ -103,17 +100,9 @@ public class XEnvDto {
         this.equipment = request.getHeader("x-equipment");
     }
 
-    private transient Map<String, String> headers = new HashMap<>();
 
     public String remoteIp() {
         return this.httpForwardedFor;
-    }
-
-    public void addHeader(String key, Object value) {
-        if (StringUtils.isEmpty(key)) {
-            return;
-        }
-        this.headers.put(key.toLowerCase(), Optional.ofNullable(value).orElse(StringUtils.EMPTY).toString());
     }
 
     public String getTraceId() {
@@ -274,14 +263,6 @@ public class XEnvDto {
 
     public void setEquipment(String equipment) {
         this.equipment = equipment;
-    }
-
-    public Map<String, String> getHeaders() {
-        return headers;
-    }
-
-    public void setHeaders(Map<String, String> headers) {
-        this.headers = headers;
     }
 
     @Override

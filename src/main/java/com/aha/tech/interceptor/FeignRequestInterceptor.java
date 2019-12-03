@@ -6,6 +6,7 @@ import feign.RequestTemplate;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.http.MediaType;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -15,6 +16,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.List;
+
+import static com.aha.tech.filter.CatContextFilter.X_TRACE_ROOT_ID;
 
 /**
  * @Author: luweihong
@@ -32,10 +35,6 @@ public class FeignRequestInterceptor implements RequestInterceptor {
     private static final String PASSWORD = "28ad87ef9fdce5d12dea093b860e8772";
 
     private static final String BASE64_ENCODE = new String(Base64.encodeBase64(String.format("%s:%s", USERNAME, PASSWORD).getBytes()));
-
-    private static final String AUTHORIZATION_KEY = "Authorization";
-
-    private static final String BASIC_AUTHORIZATION = String.format("Basic %s", BASE64_ENCODE);
 
     public static final String CONTENT_TYPE = "Content-Type";
 
@@ -72,6 +71,8 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         }
 
         HttpServletRequest request = attributes.getRequest();
+        MDC.put("traceId", request.getHeader(X_TRACE_ROOT_ID));
+
         Enumeration<String> headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String k = headerNames.nextElement();
@@ -79,12 +80,13 @@ public class FeignRequestInterceptor implements RequestInterceptor {
             requestTemplate.header(k, v);
         }
 
+
 //        CatContext catContext = new CatContext();
 //        Cat.logRemoteCallClient(catContext,Cat.getManager().getDomain());
 //
-//        requestTemplate.header(CAT_HTTP_HEADER_ROOT_MESSAGE_ID,catContext.getProperty(Cat.Context.ROOT));
-//        requestTemplate.header(CAT_HTTP_HEADER_PARENT_MESSAGE_ID,catContext.getProperty(Cat.Context.PARENT));
-//        requestTemplate.header(CAT_HTTP_HEADER_CHILD_MESSAGE_ID,catContext.getProperty(Cat.Context.CHILD));
+//        requestTemplate.header(X_TRACE_ROOT_ID,catContext.getProperty(Cat.Context.ROOT));
+//        requestTemplate.header(X_TRACE_PARENT_ID,catContext.getProperty(Cat.Context.PARENT));
+//        requestTemplate.header(X_TRACE_CHILD_ID,catContext.getProperty(Cat.Context.CHILD));
 
 
         requestTemplate.header(CONTENT_TYPE, APPLICATION_JSON_UTF8);

@@ -64,6 +64,9 @@ public class JacksonConfiguration {
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         JavaTimeModule javaTimeModule = new JavaTimeModule();
+        javaTimeModule.addSerializer(Instant.class, new InstantCustomSerializer(DateTimeFormatter.ofPattern(DATE_FORMAT_FULL, Locale.SIMPLIFIED_CHINESE)));
+        javaTimeModule.addDeserializer(Instant.class, new InstantCustomDeserializer());
+
         javaTimeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DateTimeFormatter.ofPattern(DATE_FORMAT_FULL, Locale.SIMPLIFIED_CHINESE)));
         javaTimeModule.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern(DATE_FORMAT_FULL, Locale.SIMPLIFIED_CHINESE)));
 

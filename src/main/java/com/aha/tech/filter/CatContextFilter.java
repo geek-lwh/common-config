@@ -5,12 +5,10 @@ import com.dianping.cat.Cat;
 import com.dianping.cat.CatConstants;
 import com.dianping.cat.message.Transaction;
 import org.slf4j.MDC;
-import org.springframework.core.io.support.PropertiesLoaderUtils;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Properties;
 
 /**
  * @Author: luweihong
@@ -18,22 +16,11 @@ import java.util.Properties;
  */
 public class CatContextFilter implements Filter {
 
-    public static final String CAT_HTTP_HEADER_CHILD_MESSAGE_ID = "X-CAT-CHILD-MESSAGE-ID";
+    public static final String X_TRACE_CHILD_ID = "x_trace_child_id";
 
-    public static final String CAT_HTTP_HEADER_PARENT_MESSAGE_ID = "X-CAT-PARENT-MESSAGE-ID";
+    public static final String X_TRACE_PARENT_ID = "x_trace_parent_id";
 
-    public static final String CAT_HTTP_HEADER_ROOT_MESSAGE_ID = "X-CAT-ROOT-MESSAGE-ID";
-//
-//    public static String applicationName = "";
-//
-//    static {
-//        try {
-//            Properties properties = PropertiesLoaderUtils.loadAllProperties("application.properties");
-//            applicationName = properties.getProperty("app.id", "default");
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
+    public static final String X_TRACE_ROOT_ID = "x-trace-id";
 
     @Override
     public void init(FilterConfig filterConfig) {
@@ -44,9 +31,9 @@ public class CatContextFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
 
         CatContext catContext = new CatContext();
-        catContext.addProperty(Cat.Context.ROOT, request.getHeader(CAT_HTTP_HEADER_ROOT_MESSAGE_ID));
-        catContext.addProperty(Cat.Context.PARENT, request.getHeader(CAT_HTTP_HEADER_PARENT_MESSAGE_ID));
-        catContext.addProperty(Cat.Context.CHILD, request.getHeader(CAT_HTTP_HEADER_CHILD_MESSAGE_ID));
+        catContext.addProperty(Cat.Context.ROOT, request.getHeader(X_TRACE_ROOT_ID));
+        catContext.addProperty(Cat.Context.PARENT, request.getHeader(X_TRACE_PARENT_ID));
+        catContext.addProperty(Cat.Context.CHILD, request.getHeader(X_TRACE_CHILD_ID));
         if (catContext.getProperty(Cat.Context.ROOT) == null) {
             // 当前项目的app.id
             Cat.logRemoteCallClient(catContext, Cat.getManager().getDomain());
