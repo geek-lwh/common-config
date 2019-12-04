@@ -191,3 +191,103 @@ spring web配置,定义了webMvc使用什么协议交互,如何序列化,以及�
 env拦截器,针对http request请求携带的header信息,在controller层获取不便,增加此拦截器进行拦截,并且放置到当前线程的threadlocal中进行保存.
 
 
+# DEMO
+
+<code>
+
+    #server.port = 9894
+    spring.application.name = accountserver
+    #server.servlet.context-path = /aha-account
+    
+    #jackson
+    #spring.jackson.property-naming-strategy = com.fasterxml.jackson.databind.PropertyNamingStrategy.SnakeCaseStrategy
+    #spring.jackson.date-format = yyyy-MM-dd HH:mm:ss
+    #spring.jackson.time-zone = GMT+8
+    
+    # use common config
+    use.common.swagger = true
+    use.common.jdbc = true
+    use.common.redis = true
+    use.common.kafka = false
+    use.common.http = true
+    use.common.web = true
+    user.common.core.thread = true
+    user.common.task.thread = true
+    use.common.tomcat.server = true
+    use.common.cat = true
+    
+    
+    # tomcat
+    common.server.tomcat.port = 9894
+    common.server.tomcat.contextPath = /aha-account
+    
+    
+    #swagger
+    common.swagger.namespace = accountserver
+    
+    # mysql
+    common.jdbc.driverClassName = com.mysql.jdbc.Driver
+    common.jdbc.jdbcUrl = jdbc:mysql://test6-basics:3306/account?useUnicode=true&characterEncoding=utf8
+    common.jdbc.username = hjm_dev
+    common.jdbc.password = hjm_dev
+    common.jdbc.connectionTimeout = 5000
+    common.jdbc.idleTimeout = 1000
+    common.jdbc.maximumPoolSize = 50
+    common.jdbc.minimumIdle = 5
+    
+    
+    
+    ##redis
+    common.redis.host = test6-basics
+    common.redis.port = 6379
+    common.redis.password = 
+    # 连接超时时间（毫秒）
+    common.redis.timeout = 10000
+    # 区分database
+    common.redis.database = 2
+    # 连接池最大连接数（使用负值表示没有限制） 默认 8
+    common.redis.max-active = 10
+    # 连接池最大阻塞等待时间（使用负值表示没有限制） 默认 -1
+    common.redis.max-wait = 3000
+    # 连接池中的最大空闲连接 默认 8
+    common.redis.max-idle = 5
+    # 连接池中的最小空闲连接 默认 0
+    common.redis.min-idle = 0
+    
+    # kafka
+    common.kafka.enable = on
+    common.kafka.producer.bootstrap-servers = test6-basics:9092
+    common.kafka.producer.retries = 3
+    common.kafka.producer.batch-size = 8096
+    common.kafka.producer.linger-ms = 5
+    common.kafka.producer.buffer-memory = 33554432
+    common.kafka.poll.timeout = 2000
+    
+    common.kafka.consumer.bootstrap-servers = test6-basics:9092
+    common.kafka.consumer.group-id = ${spring.application.name}
+    common.kafka.consumer.enable-auto-commit = false
+    common.kafka.consumer.auto-commit-interval-ms = 1000
+    common.kafka.consumer.session-timeout-ms = 30000
+    common.kafka.consumer.max-poll-records = 500
+    common.kafka.consumer.max.poll.interval.ms = 15000
+    #earliest,latest
+    common.kafka.consumer.auto-offset-reset = latest
+    
+    # http pool
+    common.http.connect.timeout = 5000
+    common.http.request.timeout = 5000
+    common.http.socket.timeout = 10000
+    common.http.max.total.connections = 100
+    common.http.keep.alive.timeout = 15000
+    common.http.close.idle.connection.wait.timeout = 30
+    
+    # core thread
+    common.core.thread.pool.size = 100
+    common.core.thread.max.pool.size = 200
+    common.core.thread.queue.capacity.size = 1000
+    common.core.thread.name.prefix = core-thread
+    
+    # task thread
+    common.task.pool.size = 10
+</code>
+
