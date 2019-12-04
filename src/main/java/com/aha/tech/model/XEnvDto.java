@@ -1,7 +1,7 @@
 package com.aha.tech.model;
 
 
-import com.aha.tech.anotation.XEnv;
+import com.aha.tech.annotation.XEnv;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 

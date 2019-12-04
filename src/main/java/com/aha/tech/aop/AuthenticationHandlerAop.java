@@ -1,6 +1,6 @@
 package com.aha.tech.aop;
 
-import com.aha.tech.anotation.Authentication;
+import com.aha.tech.annotation.Authentication;
 import com.aha.tech.exception.AuthenticationFailedException;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;

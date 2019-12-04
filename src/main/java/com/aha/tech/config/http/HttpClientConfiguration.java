@@ -19,6 +19,7 @@ import org.apache.http.ssl.SSLContextBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -33,6 +34,7 @@ import java.util.concurrent.TimeUnit;
  *
  */
 @Configuration
+@ConditionalOnProperty(name = "use.common.http", matchIfMissing = true)
 public class HttpClientConfiguration {
 
     private final Logger logger = LoggerFactory.getLogger(HttpClientConfiguration.class);

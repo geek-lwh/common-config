@@ -18,7 +18,7 @@ import java.util.Collections;
 import java.util.zip.GZIPInputStream;
 
 @Component
-public class JacksonDecoderComponent implements Decoder {
+public class FeignDecoderComponent implements Decoder {
 
     @Resource
     private ObjectMapper objectMapper;

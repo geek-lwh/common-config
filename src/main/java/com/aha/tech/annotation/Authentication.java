@@ -1,4 +1,4 @@
-package com.aha.tech.anotation;
+package com.aha.tech.annotation;
 
 import java.lang.annotation.*;
 

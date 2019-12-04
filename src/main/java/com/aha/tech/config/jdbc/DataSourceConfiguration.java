@@ -20,7 +20,7 @@ import javax.sql.DataSource;
  * use.common.jdbc.datasource.enable 不配置默认使用基础组件提供的数据源配置
  */
 @Configuration
-@ConditionalOnProperty(name = "use.common.jdbc")
+@ConditionalOnProperty(name = "use.common.jdbc", matchIfMissing = true)
 public class DataSourceConfiguration {
 
     public  final Logger logger = LoggerFactory.getLogger(DataSourceConfiguration.class);
