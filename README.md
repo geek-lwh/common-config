@@ -1,5 +1,9 @@
 # 基础组件使用说明
 
+请使用最新版本,查看链接:http://testm.ahaschool.com:9200/nexus/content/repositories/huijiame_repo/com/aha/public/aha-commons-config/
+
+特别注意:config包下有许多默认配置,如果不满足业务要求可以通过参数自行配置.
+
 ##  com.aha.tech.annotation
 
 ### Authentication.java
