@@ -291,3 +291,19 @@ env拦截器,针对http request请求携带的header信息,在controller层获�
     common.task.pool.size = 10
 </code>
 
+## 接入cat需要的本地文件
+
+<code>
+    mkdir /data/appdatas/cat
+    mkdir /data/applogs/cat
+    vi /data/appdatas/cat/client.xml
+    
+    将以下内容复制到client.xml中,其中ip是cat服务器地址
+    <?xml version="1.0" encoding="utf-8"?>
+    <config xmlns:xsi="http://www.w3.org/2001/XMLSchema" xsi:noNamespaceSchemaLocation="config.xsd">
+        <servers>
+            <server ip="10.10.163.249" port="2280" http-port="8080" />
+        </servers>
+    </config>
+    
+</code>
