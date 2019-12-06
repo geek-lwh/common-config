@@ -73,11 +73,16 @@ dependencies {
     // kafka dependency
     compile("org.springframework.kafka:spring-kafka:2.1.7.RELEASE")
 
+    // mongodb dependency
+    compile("org.springframework.boot:spring-boot-starter-data-mongodb:2.2.1.RELEASE")
+
     // jdbc dependency
     compile("hikari-cp:hikari-cp:2.6.0")
     compile("com.github.pagehelper:pagehelper-spring-boot-starter:1.2.5") {
         exclude group: 'org.mybatis', module: 'mybatis'
     }
+
+
     compile("tk.mybatis:mapper-spring-boot-starter:2.0.3")
     compile("mysql:mysql-connector-java:5.1.46")
 
