@@ -69,11 +69,15 @@ HttpClientConfiguration.java定义了http连接池,http长连接的属性,restTe
 
 ## com.aha.tech.config.jackson
 
-### JacksonCOnfiguration.java
+### JacksonConfiguration.java
 
 全局的jackson配置,定义了针对时间类型date,instant,localDateTime,LocalDate的序列化和反序列化格式.以及字符串驼峰与下划线的转换.被spring webConfiguration引用
 通过@ConditionalOnProperty(name = "use.common.jackson",matchIfMissing = true)进行使用或者禁用配置
 ## com.aha.tech.config.jdbc
+
+### MongodbConfiguration.java
+
+数据源的定义,通过@ConditionalOnProperty(name = "use.common.mongodb",matchIfMissing = true) 进行使用或者禁用配置
 
 ### DataSourceConfiguration.java
 
@@ -215,7 +219,13 @@ env拦截器,针对http request请求携带的header信息,在controller层获�
     user.common.task.thread = true
     use.common.tomcat.server = true
     use.common.cat = true
-    
+    use.common.mongodb = true
+
+    #mongodb
+    common.mongodb.host = localhost:27017
+    common.mongodb.database = game
+    common.mongodb.username = 
+    common.mongodb.pwd = 
     
     # tomcat
     common.server.tomcat.port = 9894

@@ -74,7 +74,7 @@ dependencies {
     compile("org.springframework.kafka:spring-kafka:2.1.7.RELEASE")
 
     // mongodb dependency
-    compile("org.springframework.boot:spring-boot-starter-data-mongodb:2.2.1.RELEASE")
+    compile("org.springframework.boot:spring-boot-starter-data-mongodb:${springBootVersion}")
 
     // jdbc dependency
     compile("hikari-cp:hikari-cp:2.6.0")
@@ -112,7 +112,7 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 
 
 def name = 'aha-commons-config'
-version = '2.2.0'
+version = '2.3.0'
 def group = 'com.aha.public'
 
 //上传jar命令 gradle publish
