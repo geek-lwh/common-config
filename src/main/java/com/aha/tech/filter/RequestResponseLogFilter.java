@@ -2,6 +2,7 @@ package com.aha.tech.filter;
 
 import com.aha.tech.filter.wrapper.RequestWrapper;
 import com.aha.tech.filter.wrapper.ResponseWrapper;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
@@ -32,7 +33,7 @@ public class RequestResponseLogFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         StringBuffer requestURL = request.getRequestURL();
         String queryString = request.getQueryString();
-        String uri = requestURL.append("?").append(queryString).toString();
+        String uri = StringUtils.isBlank(queryString) ? requestURL.toString() : requestURL.append("?").append(queryString).toString();
 
         if (uri.contains("prometheus") || uri.contains("webjars") || uri.contains("swagger") || uri.contains("api-docs") || uri.contains("favicon")) {
             filterChain.doFilter(request, response);
