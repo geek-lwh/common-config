@@ -30,7 +30,9 @@ public class RequestResponseLogFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String uri = request.getRequestURI();
+        StringBuffer requestURL = request.getRequestURL();
+        String queryString = request.getQueryString();
+        String uri = requestURL.append("?").append(queryString).toString();
 
         if (uri.contains("prometheus") || uri.contains("webjars") || uri.contains("swagger") || uri.contains("api-docs") || uri.contains("favicon")) {
             filterChain.doFilter(request, response);
