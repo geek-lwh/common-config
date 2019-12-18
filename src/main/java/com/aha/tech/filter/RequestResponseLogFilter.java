@@ -15,7 +15,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Enumeration;
 
@@ -35,54 +34,58 @@ public class RequestResponseLogFilter extends OncePerRequestFilter {
         String queryString = request.getQueryString();
         String uri = StringUtils.isBlank(queryString) ? requestURL.toString() : requestURL.append("?").append(queryString).toString();
 
-        if (uri.contains("prometheus") || uri.contains("webjars") || uri.contains("swagger") || uri.contains("api-docs") || uri.contains("favicon")) {
+        if (skipLogging(request.getRequestURI())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        RequestWrapper requestWrapper = new RequestWrapper(request);
+        ResponseWrapper responseWrapper = new ResponseWrapper(response);
+
+        StringBuilder requestLog = new StringBuilder(System.lineSeparator());
+        Enumeration<String> headers = requestWrapper.getHeaderNames();
+
+        requestLog.append("uri : ").append(uri).append(System.lineSeparator());
+        requestLog.append("header : ").append(System.lineSeparator());
+        while (headers.hasMoreElements()) {
+            String k = headers.nextElement();
+            String v = requestWrapper.getHeader(k);
+            requestLog.append(k).append("=").append(v).append(System.lineSeparator());
+        }
+
+        requestLog.append("body : ").append(System.lineSeparator());
+
+        requestLog.append(requestWrapper.getBody());
+
+        logger.info("{}", requestLog);
+
+        if (null == requestWrapper) {
             filterChain.doFilter(request, response);
         } else {
-            RequestWrapper requestWrapper = new RequestWrapper(request);
-            ResponseWrapper responseWrapper = new ResponseWrapper(response);
-
-            StringBuilder requestLog = new StringBuilder(System.lineSeparator());
-            Enumeration<String> headers = requestWrapper.getHeaderNames();
-
-            requestLog.append("uri : ").append(uri).append(System.lineSeparator());
-            requestLog.append("header : ").append(System.lineSeparator());
-            while (headers.hasMoreElements()) {
-                String k = headers.nextElement();
-                String v = requestWrapper.getHeader(k);
-                requestLog.append(k).append("=").append(v).append(System.lineSeparator());
-            }
-
-            requestLog.append("body : ").append(System.lineSeparator());
-
-            if (requestWrapper != null) {
-                BufferedReader bufferedReader = requestWrapper.getReader();
-                String line;
-                while ((line = bufferedReader.readLine()) != null) {
-                    requestLog.append(line);
-                }
-            }
-
-            logger.info("{}", requestLog);
-
-            if (null == requestWrapper) {
-                filterChain.doFilter(request, response);
-            } else {
-                filterChain.doFilter(requestWrapper, responseWrapper);
-            }
-
-            String result = new String(responseWrapper.getResponseData());
-            ServletOutputStream outputStream = response.getOutputStream();
-            outputStream.write(result.getBytes());
-            outputStream.flush();
-            outputStream.close();
-            // 打印response
-            StringBuilder responseLog = new StringBuilder(System.lineSeparator());
-            responseLog.append("response status : ").append(responseWrapper.getStatus()).append(System.lineSeparator());
-            responseLog.append("response body : ").append(System.lineSeparator());
-            responseLog.append(result);
-
-            logger.info("{}", responseLog);
+            filterChain.doFilter(requestWrapper, responseWrapper);
         }
+
+        String result = new String(responseWrapper.getResponseData());
+        ServletOutputStream outputStream = response.getOutputStream();
+        outputStream.write(result.getBytes());
+        outputStream.flush();
+        outputStream.close();
+        // 打印response
+        StringBuilder responseLog = new StringBuilder(System.lineSeparator());
+        responseLog.append("response status : ").append(responseWrapper.getStatus()).append(System.lineSeparator());
+        responseLog.append("response body : ").append(System.lineSeparator());
+        responseLog.append(result);
+
+        logger.info("{}", responseLog);
+    }
+
+    /**
+     * 是否跳过日志输出
+     * @param uri
+     * @return
+     */
+    private Boolean skipLogging(String uri) {
+        return uri.contains("prometheus") || uri.contains("webjars") || uri.contains("swagger") || uri.contains("api-docs") || uri.contains("favicon");
     }
 
 }
