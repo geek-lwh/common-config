@@ -6,8 +6,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.mapping.model.FieldNamingStrategy;
-import org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy;
 import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -97,8 +95,8 @@ public class MongodbConfiguration extends AbstractMongoConfiguration {
         MongoMappingContext mappingContext = new MongoMappingContext();
         mappingContext.setInitialEntitySet(getInitialEntitySet());
         mappingContext.setSimpleTypeHolder(customConversions().getSimpleTypeHolder());
-        FieldNamingStrategy fieldNamingStrategy = new SnakeCaseFieldNamingStrategy();
-        mappingContext.setFieldNamingStrategy(fieldNamingStrategy);
+//        FieldNamingStrategy fieldNamingStrategy = new SnakeCaseFieldNamingStrategy();
+//        mappingContext.setFieldNamingStrategy(fieldNamingStrategy);
 
         return mappingContext;
     }
