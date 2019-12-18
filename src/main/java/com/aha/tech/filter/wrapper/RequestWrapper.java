@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @Author: luweihong
@@ -51,5 +52,9 @@ public class RequestWrapper extends HttpServletRequestWrapper {
                 return byteArrayInputStream.read();
             }
         };
+    }
+
+    public String getBody() {
+        return new String(body, StandardCharsets.UTF_8);
     }
 }

@@ -56,6 +56,13 @@ public class RequestResponseLogFilter extends OncePerRequestFilter {
         requestLog.append("body : ").append(System.lineSeparator());
 
         requestLog.append(requestWrapper.getBody());
+//        if (requestWrapper != null) {
+//            BufferedReader bufferedReader = requestWrapper.getReader();
+//            String line;
+//            while ((line = bufferedReader.readLine()) != null) {
+//                requestLog.append(requestWrapper.);
+//            }
+//        }
 
         logger.info("{}", requestLog);
 
