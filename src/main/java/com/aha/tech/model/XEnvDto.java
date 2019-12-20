@@ -77,6 +77,10 @@ public class XEnvDto {
     @XEnv("x-equipment")
     private String equipment;//设备类型 值定义:ipad iphone
 
+    public XEnvDto() {
+        super();
+    }
+
     public XEnvDto(HttpServletRequest request) {
         this.traceId = request.getHeader("x-trace-root-id");
         this.token = request.getHeader("x-token");
