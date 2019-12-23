@@ -1,5 +1,8 @@
 package com.aha.tech.interceptor;
 
+import com.aha.tech.annotation.XEnv;
+import com.aha.tech.interceptor.threadlocal.XEnvThreadLocal;
+import com.aha.tech.model.XEnvDto;
 import com.google.common.collect.Lists;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
@@ -12,9 +15,11 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Enumeration;
 import java.util.List;
 
 import static com.aha.tech.filter.CatContextFilter.X_TRACE_ROOT_ID;
@@ -70,24 +75,11 @@ public class FeignRequestInterceptor implements RequestInterceptor {
             return;
         }
 
+        XEnvDto xEnvDto = XEnvThreadLocal.get();
+        initHeaderFromEnv(xEnvDto, requestTemplate);
+
         HttpServletRequest request = attributes.getRequest();
         MDC.put("traceId", request.getHeader(X_TRACE_ROOT_ID));
-
-        Enumeration<String> headerNames = request.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String k = headerNames.nextElement();
-            String v = request.getHeader(k);
-            requestTemplate.header(k, v);
-        }
-
-
-//        CatContext catContext = new CatContext();
-//        Cat.logRemoteCallClient(catContext,Cat.getManager().getDomain());
-//
-//        requestTemplate.header(X_TRACE_ROOT_ID,catContext.getProperty(Cat.Context.ROOT));
-//        requestTemplate.header(X_TRACE_PARENT_ID,catContext.getProperty(Cat.Context.PARENT));
-//        requestTemplate.header(X_TRACE_CHILD_ID,catContext.getProperty(Cat.Context.CHILD));
-
 
         requestTemplate.header(CONTENT_TYPE, APPLICATION_JSON_UTF8);
         List<String> acceptableMediaTypes = Lists.newArrayList(
@@ -112,7 +104,36 @@ public class FeignRequestInterceptor implements RequestInterceptor {
 
         logger.info("Feign request Info : {}", sb);
     }
+
+    /**
+     * 从xEnvDto中解析值到feign requestHeader
+     * @param xEnvDto
+     * @param requestTemplate
+     */
+    private void initHeaderFromEnv(XEnvDto xEnvDto, RequestTemplate requestTemplate) {
+        try {
+            Field[] xEnvFields = xEnvDto.getClass().getDeclaredFields();
+            for (Field field : xEnvFields) {
+                field.setAccessible(true);
+                if (field.isAnnotationPresent(XEnv.class)) {
+                    XEnv annotation = field.getAnnotation(XEnv.class);
+                    String headerName = annotation.value();
+                    PropertyDescriptor pd = new PropertyDescriptor(field.getName(), xEnvDto.getClass());
+                    Method readMethod = pd.getReadMethod();
+                    if (readMethod != null) {
+                        Object getValue = readMethod.invoke(xEnvDto);
+                        if (getValue != null) {
+                            requestTemplate.header(headerName, getValue.toString());
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
 }
+
 
 //        String token = request.getHeader("X-Token");
 //        // 广告来源

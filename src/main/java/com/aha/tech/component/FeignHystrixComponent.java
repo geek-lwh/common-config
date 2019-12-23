@@ -1,5 +1,7 @@
 package com.aha.tech.component;
 
+import com.aha.tech.interceptor.threadlocal.XEnvThreadLocal;
+import com.aha.tech.model.XEnvDto;
 import com.netflix.hystrix.HystrixThreadPoolKey;
 import com.netflix.hystrix.HystrixThreadPoolProperties;
 import com.netflix.hystrix.strategy.HystrixPlugins;
@@ -71,7 +73,8 @@ public class FeignHystrixComponent extends HystrixConcurrencyStrategy {
     @Override
     public <T> Callable<T> wrapCallable(Callable<T> callable) {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-        return new WrappedCallable<>(callable, requestAttributes);
+        XEnvDto xEnvDto = XEnvThreadLocal.get();
+        return new WrappedCallable<>(callable, requestAttributes, xEnvDto);
     }
 
     @Override
@@ -101,19 +104,23 @@ public class FeignHystrixComponent extends HystrixConcurrencyStrategy {
     static class WrappedCallable<T> implements Callable<T> {
         private final Callable<T> target;
         private final RequestAttributes requestAttributes;
+        private XEnvDto xEnvDto;
 
-        public WrappedCallable(Callable<T> target, RequestAttributes requestAttributes) {
+        public WrappedCallable(Callable<T> target, RequestAttributes requestAttributes, XEnvDto xEnvDto) {
             this.target = target;
             this.requestAttributes = requestAttributes;
+            this.xEnvDto = xEnvDto;
         }
 
         @Override
         public T call() throws Exception {
             try {
                 RequestContextHolder.setRequestAttributes(requestAttributes);
+                XEnvThreadLocal.set(xEnvDto);
                 return target.call();
             } finally {
                 RequestContextHolder.resetRequestAttributes();
+                XEnvThreadLocal.remove();
             }
         }
     }
