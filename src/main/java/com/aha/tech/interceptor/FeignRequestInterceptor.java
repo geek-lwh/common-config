@@ -20,6 +20,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Enumeration;
 import java.util.List;
 
 import static com.aha.tech.filter.CatContextFilter.X_TRACE_ROOT_ID;
@@ -76,7 +77,18 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         }
 
         XEnvDto xEnvDto = XEnvThreadLocal.get();
-        initHeaderFromEnv(xEnvDto, requestTemplate);
+        if (xEnvDto != null && xEnvDto.isOverwrite()) {
+            initHeaderFromEnv(xEnvDto, requestTemplate);
+        } else {
+            HttpServletRequest request = attributes.getRequest();
+            Enumeration<String> headerNames = request.getHeaderNames();
+            while (headerNames.hasMoreElements()) {
+                String k = headerNames.nextElement();
+                String v = request.getHeader(k);
+                requestTemplate.header(k, v);
+            }
+        }
+
 
         HttpServletRequest request = attributes.getRequest();
         MDC.put("traceId", request.getHeader(X_TRACE_ROOT_ID));

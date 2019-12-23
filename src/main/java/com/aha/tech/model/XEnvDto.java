@@ -77,8 +77,12 @@ public class XEnvDto {
     @XEnv("x-equipment")
     private String equipment;//设备类型 值定义:ipad iphone
 
+    // 是否重写
+    private boolean overwrite = false;
+
     public XEnvDto() {
         super();
+        this.overwrite = false;
     }
 
     public XEnvDto(HttpServletRequest request) {
@@ -102,6 +106,7 @@ public class XEnvDto {
         this.os = request.getHeader("os");
         this.version = request.getHeader("version");
         this.equipment = request.getHeader("x-equipment");
+        this.overwrite = false;
     }
 
 
@@ -267,6 +272,14 @@ public class XEnvDto {
 
     public void setEquipment(String equipment) {
         this.equipment = equipment;
+    }
+
+    public boolean isOverwrite() {
+        return overwrite;
+    }
+
+    public void setOverwrite(boolean overwrite) {
+        this.overwrite = overwrite;
     }
 
     @Override
