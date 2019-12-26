@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -112,7 +113,8 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         StringBuilder sb = new StringBuilder(System.lineSeparator());
         sb.append("Feign request URI : ").append(requestTemplate.url()).append(System.lineSeparator());
         sb.append("Feign request HEADER : ").append(requestTemplate.headers().toString()).append(System.lineSeparator());
-        sb.append("Feign request BODY : ").append(new String(requestTemplate.body(), Charset.forName("utf-8")));
+        String body = requestTemplate.body() == null ? Strings.EMPTY : new String(requestTemplate.body(), Charset.forName("utf-8"));
+        sb.append("Feign request BODY : ").append(body);
 
         logger.info("Feign request Info : {}", sb);
     }
