@@ -1,7 +1,9 @@
 package com.aha.tech.component;
 
-import com.aha.tech.interceptor.threadlocal.XEnvThreadLocal;
+import com.aha.tech.filter.cat.CatContext;
 import com.aha.tech.model.XEnvDto;
+import com.aha.tech.threadlocal.CatContextThreadLocal;
+import com.aha.tech.threadlocal.XEnvThreadLocal;
 import com.netflix.hystrix.HystrixThreadPoolKey;
 import com.netflix.hystrix.HystrixThreadPoolProperties;
 import com.netflix.hystrix.strategy.HystrixPlugins;
@@ -73,8 +75,9 @@ public class FeignHystrixComponent extends HystrixConcurrencyStrategy {
     @Override
     public <T> Callable<T> wrapCallable(Callable<T> callable) {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        CatContext catContext = CatContextThreadLocal.get();
         XEnvDto xEnvDto = XEnvThreadLocal.get();
-        return new WrappedCallable<>(callable, requestAttributes, xEnvDto);
+        return new WrappedCallable<>(callable, requestAttributes, xEnvDto, catContext);
     }
 
     @Override
@@ -105,11 +108,13 @@ public class FeignHystrixComponent extends HystrixConcurrencyStrategy {
         private final Callable<T> target;
         private final RequestAttributes requestAttributes;
         private XEnvDto xEnvDto;
+        private CatContext catContext;
 
-        public WrappedCallable(Callable<T> target, RequestAttributes requestAttributes, XEnvDto xEnvDto) {
+        public WrappedCallable(Callable<T> target, RequestAttributes requestAttributes, XEnvDto xEnvDto, CatContext catContext) {
             this.target = target;
             this.requestAttributes = requestAttributes;
             this.xEnvDto = xEnvDto;
+            this.catContext = catContext;
         }
 
         @Override
@@ -117,10 +122,12 @@ public class FeignHystrixComponent extends HystrixConcurrencyStrategy {
             try {
                 RequestContextHolder.setRequestAttributes(requestAttributes);
                 XEnvThreadLocal.set(xEnvDto);
+                CatContextThreadLocal.set(catContext);
                 return target.call();
             } finally {
                 RequestContextHolder.resetRequestAttributes();
                 XEnvThreadLocal.remove();
+                CatContextThreadLocal.remove();
             }
         }
     }

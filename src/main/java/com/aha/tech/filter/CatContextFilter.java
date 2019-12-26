@@ -1,6 +1,7 @@
 package com.aha.tech.filter;
 
 import com.aha.tech.filter.cat.CatContext;
+import com.aha.tech.threadlocal.CatContextThreadLocal;
 import com.dianping.cat.Cat;
 import com.dianping.cat.CatConstants;
 import com.dianping.cat.message.Transaction;
@@ -22,6 +23,8 @@ public class CatContextFilter implements Filter {
 
     public static final String X_TRACE_ROOT_ID = "x-trace-id";
 
+    public static final String X_DOMAIN = "x-domain";
+
     @Override
     public void init(FilterConfig filterConfig) {
     }
@@ -29,11 +32,11 @@ public class CatContextFilter implements Filter {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
-
         CatContext catContext = new CatContext();
         catContext.addProperty(Cat.Context.ROOT, request.getHeader(X_TRACE_ROOT_ID));
         catContext.addProperty(Cat.Context.PARENT, request.getHeader(X_TRACE_PARENT_ID));
         catContext.addProperty(Cat.Context.CHILD, request.getHeader(X_TRACE_CHILD_ID));
+        catContext.addProperty(X_DOMAIN, Cat.getManager().getDomain());
         if (catContext.getProperty(Cat.Context.ROOT) == null) {
             // 当前项目的app.id
             Cat.logRemoteCallClient(catContext, Cat.getManager().getDomain());
@@ -42,7 +45,7 @@ public class CatContextFilter implements Filter {
         }
 
         MDC.put("traceId", catContext.getProperty(Cat.Context.ROOT));
-
+        CatContextThreadLocal.set(catContext);
         Transaction t = Cat.newTransaction(CatConstants.TYPE_URL, request.getRequestURI());
         try {
             filterChain.doFilter(servletRequest, servletResponse);
@@ -53,6 +56,7 @@ public class CatContextFilter implements Filter {
             throw ex;
         } finally {
             t.complete();
+            CatContextThreadLocal.remove();
         }
     }
 

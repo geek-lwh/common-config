@@ -1,8 +1,11 @@
 package com.aha.tech.interceptor;
 
 import com.aha.tech.annotation.XEnv;
-import com.aha.tech.interceptor.threadlocal.XEnvThreadLocal;
+import com.aha.tech.filter.cat.CatContext;
 import com.aha.tech.model.XEnvDto;
+import com.aha.tech.threadlocal.CatContextThreadLocal;
+import com.aha.tech.threadlocal.XEnvThreadLocal;
+import com.dianping.cat.Cat;
 import com.google.common.collect.Lists;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
@@ -23,8 +26,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.List;
-
-import static com.aha.tech.filter.CatContextFilter.X_TRACE_ROOT_ID;
 
 /**
  * @Author: luweihong
@@ -77,46 +78,20 @@ public class FeignRequestInterceptor implements RequestInterceptor {
             return;
         }
 
-        XEnvDto xEnvDto = XEnvThreadLocal.get();
-        if (xEnvDto != null && xEnvDto.isOverwrite()) {
-            initHeaderFromEnv(xEnvDto, requestTemplate);
-        } else {
-            HttpServletRequest request = attributes.getRequest();
-            Enumeration<String> headerNames = request.getHeaderNames();
-            while (headerNames.hasMoreElements()) {
-                String k = headerNames.nextElement();
-                String v = request.getHeader(k);
-                requestTemplate.header(k, v);
-            }
-        }
+        CatContext catContext = CatContextThreadLocal.get();
+        String rootId = catContext.getProperty(Cat.Context.ROOT);
+        String parentId = catContext.getProperty(Cat.Context.PARENT);
+        String childId = catContext.getProperty(Cat.Context.CHILD);
+        requestTemplate.header(Cat.Context.ROOT, rootId);
+        requestTemplate.header(Cat.Context.PARENT, parentId);
+        requestTemplate.header(Cat.Context.CHILD, childId);
+        MDC.put("traceId", parentId);
 
+        logger.debug(" 开始Feign远程调用 : " + requestTemplate.method() + " 消息模型 : rootId = " + rootId + " parentId = " + parentId + " childId = " + childId);
 
-        HttpServletRequest request = attributes.getRequest();
-        MDC.put("traceId", request.getHeader(X_TRACE_ROOT_ID));
+        initRequestHeader(attributes, requestTemplate);
+        feignRequestLogging(requestTemplate);
 
-        requestTemplate.header(CONTENT_TYPE, APPLICATION_JSON_UTF8);
-        List<String> acceptableMediaTypes = Lists.newArrayList(
-                MediaType.APPLICATION_JSON.toString(),
-                MediaType.APPLICATION_JSON_UTF8.toString(),
-                MediaType.APPLICATION_XML.toString(),
-                MediaType.TEXT_PLAIN.toString(),
-                MediaType.APPLICATION_FORM_URLENCODED.toString(),
-                MediaType.APPLICATION_OCTET_STREAM.toString());
-
-        requestTemplate.header(ACCEPT, acceptableMediaTypes);
-        requestTemplate.header(CONNECTION, HTTP_HEADER_CONNECTION_VALUE);
-        requestTemplate.header(HTTP_HEADER_KEEP_ALIVE_KEY, HTTP_HEADER_KEEP_ALIVE_VALUE);
-        requestTemplate.header(HTTP_HEADER_X_REQUESTED_WITH_KEY, HTTP_HEADER_X_REQUESTED_WITH_VALUE);
-        requestTemplate.header(CONTENT_ENCODING, CHARSET_ENCODING);
-        requestTemplate.header(X_TOKEN_KEY, X_TOKEN);
-
-        StringBuilder sb = new StringBuilder(System.lineSeparator());
-        sb.append("Feign request URI : ").append(requestTemplate.url()).append(System.lineSeparator());
-        sb.append("Feign request HEADER : ").append(requestTemplate.headers().toString()).append(System.lineSeparator());
-        String body = requestTemplate.body() == null ? Strings.EMPTY : new String(requestTemplate.body(), Charset.forName("utf-8"));
-        sb.append("Feign request BODY : ").append(body);
-
-        logger.info("Feign request Info : {}", sb);
     }
 
     /**
@@ -146,41 +121,55 @@ public class FeignRequestInterceptor implements RequestInterceptor {
             logger.error(e.getMessage(), e);
         }
     }
+
+    /**
+     * 初始化请求头
+     * @param attributes
+     * @param requestTemplate
+     */
+    private void initRequestHeader(ServletRequestAttributes attributes, RequestTemplate requestTemplate) {
+        HttpServletRequest request = attributes.getRequest();
+
+        XEnvDto xEnvDto = XEnvThreadLocal.get();
+        if (xEnvDto != null && xEnvDto.isOverwrite()) {
+            initHeaderFromEnv(xEnvDto, requestTemplate);
+        } else {
+            Enumeration<String> headerNames = request.getHeaderNames();
+            while (headerNames.hasMoreElements()) {
+                String k = headerNames.nextElement();
+                String v = request.getHeader(k);
+                requestTemplate.header(k, v);
+            }
+        }
+
+        requestTemplate.header(CONTENT_TYPE, APPLICATION_JSON_UTF8);
+        List<String> acceptableMediaTypes = Lists.newArrayList(
+                MediaType.APPLICATION_JSON.toString(),
+                MediaType.APPLICATION_JSON_UTF8.toString(),
+                MediaType.APPLICATION_XML.toString(),
+                MediaType.TEXT_PLAIN.toString(),
+                MediaType.APPLICATION_FORM_URLENCODED.toString(),
+                MediaType.APPLICATION_OCTET_STREAM.toString());
+
+        requestTemplate.header(ACCEPT, acceptableMediaTypes);
+        requestTemplate.header(CONNECTION, HTTP_HEADER_CONNECTION_VALUE);
+        requestTemplate.header(HTTP_HEADER_KEEP_ALIVE_KEY, HTTP_HEADER_KEEP_ALIVE_VALUE);
+        requestTemplate.header(HTTP_HEADER_X_REQUESTED_WITH_KEY, HTTP_HEADER_X_REQUESTED_WITH_VALUE);
+        requestTemplate.header(CONTENT_ENCODING, CHARSET_ENCODING);
+        requestTemplate.header(X_TOKEN_KEY, X_TOKEN);
+    }
+
+    /**
+     * feign调用日志
+     * @param requestTemplate
+     */
+    private void feignRequestLogging(RequestTemplate requestTemplate) {
+        StringBuilder sb = new StringBuilder(System.lineSeparator());
+        sb.append("Feign request URI : ").append(requestTemplate.url()).append(System.lineSeparator());
+        sb.append("Feign request HEADER : ").append(requestTemplate.headers().toString()).append(System.lineSeparator());
+        String body = requestTemplate.body() == null ? Strings.EMPTY : new String(requestTemplate.body(), Charset.forName("utf-8"));
+        sb.append("Feign request BODY : ").append(body);
+
+        logger.debug("Feign request Info : {}", sb);
+    }
 }
-
-
-//        String token = request.getHeader("X-Token");
-//        // 广告来源
-//        String utmSource = request.getHeader("X-Env-Utm-Source");
-//        // 广告媒介
-//        String utmMedium = request.getHeader("X-Env-Utm-Medium");
-//        // 广告名称
-//        String utmCampaign = request.getHeader("X-Env-Utm-Campaign");
-//        //
-//        String utmTerm = request.getHeader("X-Env-Utm-Term");
-//
-//        String utmContent = request.getHeader("X-Env-Utm-Content");
-//
-//        String userId = request.getHeader("X-Env-User-Id");
-//
-//        String pk = request.getHeader("X-Env-PK");
-//
-//        String ps = request.getHeader("X-Env-PS");
-//
-//        String pd = request.getHeader("X-Env-PD");
-//
-//        String pp = request.getHeader("X-Env-PP");
-//
-//        String appType = request.getHeader("X-Env-App-Type");
-//
-//        String guniqid = request.getHeader("X-Env-Guniqid");
-//
-//        String channel = request.getHeader("X-Env-Channel");
-//
-//        String xForwarded = request.getHeader("X-Forwarded-For");
-//
-//        String userAgent = request.getHeader("User-Agent");
-//
-//        String os = request.getHeader("os");
-//
-//        String version = request.getHeader("version");

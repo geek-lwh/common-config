@@ -1,4 +1,4 @@
-package com.aha.tech.interceptor.threadlocal;
+package com.aha.tech.threadlocal;
 
 import com.aha.tech.model.XEnvDto;
 import org.slf4j.Logger;
@@ -12,14 +12,14 @@ public class XEnvThreadLocal {
 
     private static final Logger logger = LoggerFactory.getLogger(XEnvThreadLocal.class);
 
-    private static InheritableThreadLocal<XEnvDto> inheritableHeadEnv = new InheritableThreadLocal<XEnvDto>();
+    private static InheritableThreadLocal<XEnvDto> inheritableThread = new InheritableThreadLocal<XEnvDto>();
 
     /**
      * 获取xEnvDto
      * @return
      */
     public static XEnvDto get() {
-        return inheritableHeadEnv.get();
+        return inheritableThread.get();
     }
 
     /**
@@ -27,14 +27,14 @@ public class XEnvThreadLocal {
      * @param xEnvDto
      */
     public static void set(XEnvDto xEnvDto) {
-        inheritableHeadEnv.set(xEnvDto);
+        inheritableThread.set(xEnvDto);
     }
 
     /**
      * 清除envDto
      */
     public static void remove() {
-        inheritableHeadEnv.remove();
+        inheritableThread.remove();
     }
 
 }

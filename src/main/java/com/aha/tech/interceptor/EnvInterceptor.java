@@ -1,7 +1,7 @@
 package com.aha.tech.interceptor;
 
-import com.aha.tech.interceptor.threadlocal.XEnvThreadLocal;
 import com.aha.tech.model.XEnvDto;
+import com.aha.tech.threadlocal.XEnvThreadLocal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.HandlerInterceptor;
