@@ -1,6 +1,6 @@
 package com.aha.tech.config.cat;
 
-import com.aha.tech.filter.CatContextFilter;
+import com.aha.tech.filter.CatContextServletFilter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -17,7 +17,7 @@ public class CatFilterConfiguration {
     @Bean
     public FilterRegistrationBean catFilter() {
         FilterRegistrationBean registration = new FilterRegistrationBean();
-        CatContextFilter filter = new CatContextFilter();
+        CatContextServletFilter filter = new CatContextServletFilter();
         registration.setFilter(filter);
         registration.addUrlPatterns("/*");
         registration.setName("cat-servlet-filter");

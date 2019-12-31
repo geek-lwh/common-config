@@ -1,42 +1,36 @@
 package com.aha.tech.filter;
 
+import com.aha.tech.constants.CatConstantsExt;
 import com.aha.tech.filter.cat.CatContext;
 import com.aha.tech.threadlocal.CatContextThreadLocal;
 import com.dianping.cat.Cat;
 import com.dianping.cat.CatConstants;
+import com.dianping.cat.message.Message;
 import com.dianping.cat.message.Transaction;
 import org.slf4j.MDC;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 
 /**
  * @Author: luweihong
  * @Date: 2019/11/19
  */
-public class CatContextFilter implements Filter {
+public class CatContextServletFilter implements Filter {
 
-    public static final String X_TRACE_CHILD_ID = "x_trace_child_id";
-
-    public static final String X_TRACE_PARENT_ID = "x_trace_parent_id";
-
-    public static final String X_TRACE_ROOT_ID = "x-trace-id";
-
-    public static final String X_DOMAIN = "x-domain";
 
     @Override
     public void init(FilterConfig filterConfig) {
     }
 
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         CatContext catContext = new CatContext();
-        catContext.addProperty(Cat.Context.ROOT, request.getHeader(X_TRACE_ROOT_ID));
-        catContext.addProperty(Cat.Context.PARENT, request.getHeader(X_TRACE_PARENT_ID));
-        catContext.addProperty(Cat.Context.CHILD, request.getHeader(X_TRACE_CHILD_ID));
-        catContext.addProperty(X_DOMAIN, Cat.getManager().getDomain());
+        catContext.addProperty(Cat.Context.ROOT, request.getHeader(CatConstantsExt.CAT_HTTP_HEADER_ROOT_MESSAGE_ID));
+        catContext.addProperty(Cat.Context.PARENT, request.getHeader(CatConstantsExt.CAT_HTTP_HEADER_PARENT_MESSAGE_ID));
+        catContext.addProperty(Cat.Context.CHILD, request.getHeader(CatConstantsExt.CAT_HTTP_HEADER_CHILD_MESSAGE_ID));
+        catContext.addProperty(CatConstantsExt.APPLICATION_NAME, Cat.getManager().getDomain());
         if (catContext.getProperty(Cat.Context.ROOT) == null) {
             // 当前项目的app.id
             Cat.logRemoteCallClient(catContext, Cat.getManager().getDomain());
@@ -44,19 +38,24 @@ public class CatContextFilter implements Filter {
             Cat.logRemoteCallServer(catContext);
         }
 
-        MDC.put("traceId", catContext.getProperty(Cat.Context.ROOT));
+        String traceId = request.getHeader(CatConstantsExt.TRACE_ID);
+        MDC.put("traceId", traceId);
         CatContextThreadLocal.set(catContext);
         Transaction t = Cat.newTransaction(CatConstants.TYPE_URL, request.getRequestURI());
+
         try {
+            Cat.logEvent(CatConstantsExt.Type_URL_METHOD, request.getMethod(), Message.SUCCESS, request.getRequestURL().toString());
+            Cat.logEvent(CatConstantsExt.Type_URL_CLIENT, request.getRemoteHost());
+            Cat.logEvent(CatConstantsExt.TRACE_ID, traceId);
+
             filterChain.doFilter(servletRequest, servletResponse);
             t.setStatus(Transaction.SUCCESS);
         } catch (Exception ex) {
             t.setStatus(ex);
             Cat.logError(ex);
-            throw ex;
         } finally {
-            t.complete();
             CatContextThreadLocal.remove();
+            t.complete();
         }
     }
 
