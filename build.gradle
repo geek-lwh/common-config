@@ -112,7 +112,7 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 
 
 def name = 'aha-commons-config'
-version = '2.7.0'
+version = '2.8.0'
 def group = 'com.aha.public'
 
 //上传jar命令 gradle publish
