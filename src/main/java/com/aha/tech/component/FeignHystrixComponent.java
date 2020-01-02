@@ -3,10 +3,7 @@ package com.aha.tech.component;
 import com.aha.tech.filter.cat.CatContext;
 import com.aha.tech.model.XEnvDto;
 import com.aha.tech.threadlocal.CatContextThreadLocal;
-import com.aha.tech.threadlocal.MessageThreadLocal;
 import com.aha.tech.threadlocal.XEnvThreadLocal;
-import com.dianping.cat.Cat;
-import com.dianping.cat.message.spi.internal.DefaultMessageTree;
 import com.netflix.hystrix.HystrixThreadPoolKey;
 import com.netflix.hystrix.HystrixThreadPoolProperties;
 import com.netflix.hystrix.strategy.HystrixPlugins;
@@ -80,8 +77,7 @@ public class FeignHystrixComponent extends HystrixConcurrencyStrategy {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         CatContext catContext = CatContextThreadLocal.get();
         XEnvDto xEnvDto = XEnvThreadLocal.get();
-        DefaultMessageTree messageManager = (DefaultMessageTree) Cat.getManager().getThreadLocalMessageTree();
-        return new WrappedCallable<>(callable, requestAttributes, xEnvDto, catContext, messageManager);
+        return new WrappedCallable<>(callable, requestAttributes, xEnvDto, catContext);
     }
 
     @Override
@@ -113,14 +109,12 @@ public class FeignHystrixComponent extends HystrixConcurrencyStrategy {
         private final RequestAttributes requestAttributes;
         private XEnvDto xEnvDto;
         private CatContext catContext;
-        private DefaultMessageTree messageManager;
 
-        public WrappedCallable(Callable<T> target, RequestAttributes requestAttributes, XEnvDto xEnvDto, CatContext catContext, DefaultMessageTree messageManager) {
+        public WrappedCallable(Callable<T> target, RequestAttributes requestAttributes, XEnvDto xEnvDto, CatContext catContext) {
             this.target = target;
             this.requestAttributes = requestAttributes;
             this.xEnvDto = xEnvDto;
             this.catContext = catContext;
-            this.messageManager = messageManager;
         }
 
         @Override
@@ -129,13 +123,11 @@ public class FeignHystrixComponent extends HystrixConcurrencyStrategy {
                 RequestContextHolder.setRequestAttributes(requestAttributes);
                 XEnvThreadLocal.set(xEnvDto);
                 CatContextThreadLocal.set(catContext);
-                MessageThreadLocal.set(messageManager);
                 return target.call();
             } finally {
                 RequestContextHolder.resetRequestAttributes();
                 XEnvThreadLocal.remove();
                 CatContextThreadLocal.remove();
-                MessageThreadLocal.remove();
             }
         }
     }

@@ -5,11 +5,8 @@ import com.aha.tech.constants.CatConstantsExt;
 import com.aha.tech.filter.cat.CatContext;
 import com.aha.tech.model.XEnvDto;
 import com.aha.tech.threadlocal.CatContextThreadLocal;
-import com.aha.tech.threadlocal.MessageThreadLocal;
 import com.aha.tech.threadlocal.XEnvThreadLocal;
 import com.dianping.cat.Cat;
-import com.dianping.cat.message.Event;
-import com.dianping.cat.message.spi.internal.DefaultMessageTree;
 import com.google.common.collect.Lists;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
@@ -92,12 +89,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
      * @param requestTemplate
      */
     private void buildTrace(RequestTemplate requestTemplate) {
-//        DefaultMessageTree defaultMessageTree = MessageTreeThreadLocal.get();
         CatContext catContext = CatContextThreadLocal.get();
-        this.logRemoteCallClient(catContext, Cat.getManager().getDomain());
-//        Cat.logRemoteCallClient(catContext, Cat.getManager().getDomain());
-//        messageManager.get;
-
         Cat.logRemoteCallClient(catContext, Cat.getManager().getDomain());
         String rootId = catContext.getProperty(Cat.Context.ROOT);
         String parentId = catContext.getProperty(Cat.Context.PARENT);
@@ -110,33 +102,6 @@ public class FeignRequestInterceptor implements RequestInterceptor {
 
         MDC.put("traceId", parentId);
         logger.info(Cat.getManager().getDomain() + "开始Feign远程调用 : " + requestTemplate.method() + " 消息模型 : rootId = " + rootId + " parentId = " + parentId + " childId = " + childId);
-    }
-
-    public static void logRemoteCallClient(Cat.Context ctx, String domain) {
-        try {
-            DefaultMessageTree tree = MessageThreadLocal.get();
-            String messageId = tree.getMessageId();
-
-            if (messageId == null) {
-                messageId = Cat.createMessageId();
-                tree.setMessageId(messageId);
-            }
-
-            String childId = Cat.getProducer().createRpcServerId(domain);
-            Cat.logEvent(CatConstantsExt.CONSUMER_CALL_APP, "", Event.SUCCESS, childId);
-
-            String root = tree.getRootMessageId();
-
-            if (root == null) {
-                root = messageId;
-            }
-
-            ctx.addProperty(Cat.Context.ROOT, root);
-            ctx.addProperty(Cat.Context.PARENT, messageId);
-            ctx.addProperty(Cat.Context.CHILD, childId);
-        } catch (Exception e) {
-//            errorHandler(e);
-        }
     }
 
     /**
