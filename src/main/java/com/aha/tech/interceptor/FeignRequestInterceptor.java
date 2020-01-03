@@ -74,14 +74,38 @@ public class FeignRequestInterceptor implements RequestInterceptor {
 
     @Override
     public void apply(RequestTemplate requestTemplate) {
+        initRequestHeader(requestTemplate);
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (attributes == null) {
             return;
         }
 
+        copyOriginalRequestHeader(attributes, requestTemplate);
+        overwriteXenv(requestTemplate);
         buildTrace(requestTemplate);
-        initRequestHeader(attributes, requestTemplate);
         feignRequestLogging(requestTemplate);
+    }
+
+    private void overwriteXenv(RequestTemplate requestTemplate) {
+        XEnvDto xEnvDto = XEnvThreadLocal.get();
+        if (xEnvDto != null && xEnvDto.isOverwrite()) {
+            initHeaderFromEnv(xEnvDto, requestTemplate);
+        }
+    }
+
+    /**
+     * 复制原始请求头
+     * @param attributes
+     * @param requestTemplate
+     */
+    private void copyOriginalRequestHeader(ServletRequestAttributes attributes, RequestTemplate requestTemplate) {
+        HttpServletRequest request = attributes.getRequest();
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String k = headerNames.nextElement();
+            String v = request.getHeader(k);
+            requestTemplate.header(k, v);
+        }
     }
 
     /**
@@ -134,24 +158,9 @@ public class FeignRequestInterceptor implements RequestInterceptor {
 
     /**
      * 初始化请求头
-     * @param attributes
      * @param requestTemplate
      */
-    private void initRequestHeader(ServletRequestAttributes attributes, RequestTemplate requestTemplate) {
-        HttpServletRequest request = attributes.getRequest();
-
-        XEnvDto xEnvDto = XEnvThreadLocal.get();
-        if (xEnvDto != null && xEnvDto.isOverwrite()) {
-            initHeaderFromEnv(xEnvDto, requestTemplate);
-        } else {
-            Enumeration<String> headerNames = request.getHeaderNames();
-            while (headerNames.hasMoreElements()) {
-                String k = headerNames.nextElement();
-                String v = request.getHeader(k);
-                requestTemplate.header(k, v);
-            }
-        }
-
+    private void initRequestHeader(RequestTemplate requestTemplate) {
         requestTemplate.header(CONTENT_TYPE, APPLICATION_JSON_UTF8);
         List<String> acceptableMediaTypes = Lists.newArrayList(
                 MediaType.APPLICATION_JSON.toString(),
