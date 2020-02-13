@@ -115,17 +115,19 @@ public class FeignRequestInterceptor implements RequestInterceptor {
     private void buildTrace(RequestTemplate requestTemplate) {
         CatContext catContext = CatContextThreadLocal.get();
         Cat.logRemoteCallClient(catContext, Cat.getManager().getDomain());
-        String rootId = catContext.getProperty(Cat.Context.ROOT);
-        String parentId = catContext.getProperty(Cat.Context.PARENT);
-        String childId = catContext.getProperty(Cat.Context.CHILD);
+        if (catContext != null) {
+            String rootId = catContext.getProperty(Cat.Context.ROOT);
+            String parentId = catContext.getProperty(Cat.Context.PARENT);
+            String childId = catContext.getProperty(Cat.Context.CHILD);
 
-        requestTemplate.header(CatConstantsExt.CAT_HTTP_HEADER_ROOT_MESSAGE_ID, rootId);
-        requestTemplate.header(CatConstantsExt.CAT_HTTP_HEADER_PARENT_MESSAGE_ID, parentId);
-        requestTemplate.header(CatConstantsExt.CAT_HTTP_HEADER_CHILD_MESSAGE_ID, childId);
-        requestTemplate.header(CatConstantsExt.APPLICATION_NAME, Cat.getManager().getDomain());
+            requestTemplate.header(CatConstantsExt.CAT_HTTP_HEADER_ROOT_MESSAGE_ID, rootId);
+            requestTemplate.header(CatConstantsExt.CAT_HTTP_HEADER_PARENT_MESSAGE_ID, parentId);
+            requestTemplate.header(CatConstantsExt.CAT_HTTP_HEADER_CHILD_MESSAGE_ID, childId);
+            requestTemplate.header(CatConstantsExt.APPLICATION_NAME, Cat.getManager().getDomain());
 
-        MDC.put("traceId", parentId);
-        logger.info(Cat.getManager().getDomain() + "开始Feign远程调用 : " + requestTemplate.method() + " 消息模型 : rootId = " + rootId + " parentId = " + parentId + " childId = " + childId);
+            MDC.put("traceId", parentId);
+            logger.info(Cat.getManager().getDomain() + "开始Feign远程调用 : " + requestTemplate.method() + " 消息模型 : rootId = " + rootId + " parentId = " + parentId + " childId = " + childId);
+        }
     }
 
     /**
