@@ -117,11 +117,13 @@ public class HttpClientConfiguration {
                 String value = he.getValue();
 
                 if (value != null && param.equalsIgnoreCase("timeout")) {
-                    return Long.parseLong(value) * 1000;
+                    long responseTimeout = Long.parseLong(value) * 1000;
+                    logger.debug("keepAlive timeout init finish >> {}", responseTimeout);
+                    return responseTimeout;
                 }
             }
 
-            logger.info("keepAlive strategy init finish >> {}", keepaliveTimeout);
+            logger.debug("keepAlive timeout init finish >> {}", keepaliveTimeout);
             return keepaliveTimeout;
         };
     }
