@@ -10,6 +10,10 @@ public class AuthenticationFailedException extends BaseException{
         super("该接口不对访客开放", 500500);
     }
 
+    public AuthenticationFailedException(String api) {
+        super("该接口不对访客开放", 500500);
+    }
+
     public AuthenticationFailedException(String msg, int code) {
         super(msg, code);
     }
