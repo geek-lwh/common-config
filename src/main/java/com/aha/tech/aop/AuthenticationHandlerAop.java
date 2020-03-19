@@ -55,16 +55,17 @@ public class AuthenticationHandlerAop {
 
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = attributes.getRequest();
+        String api = request.getRequestURI();
         HttpMethod httpMethod = HttpMethod.valueOf(request.getMethod());
         switch (httpMethod) {
             case POST:
             case PUT:
             case PATCH:
-                verifyBody(joinPoint);
+                verifyBody(joinPoint, api);
                 break;
             case GET:
             case DELETE:
-                verifyParams(request);
+                verifyParams(request, api);
                 break;
             default:
                 break;
@@ -74,12 +75,13 @@ public class AuthenticationHandlerAop {
     /**
      * 校验body数据
      * @param joinPoint
+     * @param api
      */
-    private void verifyBody(JoinPoint joinPoint) {
+    private void verifyBody(JoinPoint joinPoint, String api) {
         Object[] paramsArray = joinPoint.getArgs();
         if(paramsArray.length <= 0){
             logger.error("校验userId出现异常");
-            throw new AuthenticationFailedException();
+            throw new AuthenticationFailedException(api);
         }
 
         Object param = paramsArray[0];
@@ -87,12 +89,12 @@ public class AuthenticationHandlerAop {
         list.forEach( obj -> {
             Map<String, Object> body = this.convertObjToMap(obj);
             if (!body.containsKey(USER_FILED)) {
-                throw new AuthenticationFailedException();
+                throw new AuthenticationFailedException(api);
             }
 
             Long userId = body.get(USER_FILED) == null ? null : Long.parseLong(body.get(USER_FILED).toString());
             if (userId == null || userId <= 0l) {
-                throw new AuthenticationFailedException();
+                throw new AuthenticationFailedException(api);
             }
         });
 
@@ -101,15 +103,17 @@ public class AuthenticationHandlerAop {
     /**
      * 校验参数
      * @param request
+     * @param api
      */
-    private void verifyParams(HttpServletRequest request) {
+    private void verifyParams(HttpServletRequest request, String api) {
         String uId = request.getParameter(USER_PARAM_FILED);
+
         if (StringUtils.isBlank(uId)) {
-            throw new AuthenticationFailedException();
+            throw new AuthenticationFailedException(api);
         }
 
         if (Long.parseLong(uId) <= 0l) {
-            throw new AuthenticationFailedException();
+            throw new AuthenticationFailedException(api);
         }
     }
 
