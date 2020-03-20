@@ -163,14 +163,8 @@ public class FeignRequestInterceptor implements RequestInterceptor {
      * @param requestTemplate
      */
     private void initRequestHeader(RequestTemplate requestTemplate) {
-        requestTemplate.header(CONTENT_TYPE, APPLICATION_JSON_UTF8);
-        List<String> acceptableMediaTypes = Lists.newArrayList(
-                MediaType.APPLICATION_JSON.toString(),
-                MediaType.APPLICATION_JSON_UTF8.toString(),
-                MediaType.APPLICATION_XML.toString(),
-                MediaType.TEXT_PLAIN.toString(),
-                MediaType.APPLICATION_FORM_URLENCODED.toString(),
-                MediaType.APPLICATION_OCTET_STREAM.toString());
+        requestTemplate.header(CONTENT_TYPE, MediaType.ALL_VALUE);
+        List<String> acceptableMediaTypes = Lists.newArrayList(MediaType.ALL_VALUE);
 
         requestTemplate.header(ACCEPT, acceptableMediaTypes);
         requestTemplate.header(CONNECTION, HTTP_HEADER_CONNECTION_VALUE);
