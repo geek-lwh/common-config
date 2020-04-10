@@ -15,6 +15,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -83,13 +84,13 @@ public class FeignRequestInterceptor implements RequestInterceptor {
             return;
         }
 
-        copyOriginalRequestHeader(attributes, requestTemplate);
+//        copyOriginalRequestHeader(attributes, requestTemplate);
         overwriteXenv(requestTemplate);
         buildTrace(requestTemplate);
-
-        if (!PROFILE.startsWith(TEST_PROFILE_PREFIX)) {
-            feignRequestLogging(requestTemplate);
-        }
+        feignRequestLogging(requestTemplate);
+//        if (!PROFILE.startsWith(TEST_PROFILE_PREFIX)) {
+//            feignRequestLogging(requestTemplate);
+//        }
     }
 
     private void overwriteXenv(RequestTemplate requestTemplate) {
@@ -170,10 +171,11 @@ public class FeignRequestInterceptor implements RequestInterceptor {
      * @param requestTemplate
      */
     private void initRequestHeader(RequestTemplate requestTemplate) {
-        String[] mediaType = new String[]{MediaType.APPLICATION_JSON_UTF8_VALUE, MediaType.TEXT_PLAIN_VALUE};
-        requestTemplate.header(CONTENT_TYPE, mediaType);
+        if (!requestTemplate.headers().containsKey(CONTENT_TYPE)) {
+            String contentType = requestTemplate.method().equals(HttpMethod.POST.name()) ? MediaType.APPLICATION_JSON_UTF8_VALUE : MediaType.TEXT_PLAIN_VALUE;
+            requestTemplate.header(CONTENT_TYPE, contentType);
+        }
         List<String> acceptableMediaTypes = Lists.newArrayList(MediaType.ALL_VALUE);
-
         requestTemplate.header(ACCEPT, acceptableMediaTypes);
         requestTemplate.header(CONNECTION, HTTP_HEADER_CONNECTION_VALUE);
         requestTemplate.header(HTTP_HEADER_KEEP_ALIVE_KEY, HTTP_HEADER_KEEP_ALIVE_VALUE);
