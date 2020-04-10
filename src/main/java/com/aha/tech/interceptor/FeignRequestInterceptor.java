@@ -72,7 +72,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
 
     public static final String ACCEPT = "accept";
 
-    public static final String PROFILE = System.getProperty("spring.profiles.active");
+    public static final String PROFILE = System.getProperty("spring.profiles.active", "prod");
 
     public static final String TEST_PROFILE_PREFIX = "test";
 
