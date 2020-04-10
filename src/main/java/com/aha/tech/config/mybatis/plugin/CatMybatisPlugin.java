@@ -1,7 +1,6 @@
 package com.aha.tech.config.mybatis.plugin;
 
 import com.dianping.cat.Cat;
-import com.dianping.cat.CatConstants;
 import com.dianping.cat.message.Message;
 import com.dianping.cat.message.Transaction;
 import org.apache.ibatis.cache.CacheKey;
@@ -41,7 +40,7 @@ public class CatMybatisPlugin implements Interceptor {
         //begin cat transaction
         MappedStatement mappedStatement = (MappedStatement) invocation.getArgs()[0];
         String methodName = this.getMethodName(mappedStatement);
-        Transaction t = Cat.newTransaction(CatConstants.TYPE_SQL, methodName);
+        Transaction t = Cat.newTransaction("SQL", methodName);
 
         Cat.logEvent("SQL.Database", datasourceUrl);
         Cat.logEvent("SQL.Method", mappedStatement.getSqlCommandType().name().toLowerCase(), Message.SUCCESS, getSql(invocation, mappedStatement));

@@ -71,6 +71,9 @@ public class FeignRequestInterceptor implements RequestInterceptor {
 
     public static final String ACCEPT = "accept";
 
+    public static final String PROFILE = System.getProperty("spring.profiles.active");
+
+    public static final String TEST_PROFILE_PREFIX = "test";
 
     @Override
     public void apply(RequestTemplate requestTemplate) {
@@ -83,7 +86,10 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         copyOriginalRequestHeader(attributes, requestTemplate);
         overwriteXenv(requestTemplate);
         buildTrace(requestTemplate);
-        feignRequestLogging(requestTemplate);
+
+        if (!PROFILE.startsWith(TEST_PROFILE_PREFIX)) {
+            feignRequestLogging(requestTemplate);
+        }
     }
 
     private void overwriteXenv(RequestTemplate requestTemplate) {
@@ -114,20 +120,21 @@ public class FeignRequestInterceptor implements RequestInterceptor {
      */
     private void buildTrace(RequestTemplate requestTemplate) {
         CatContext catContext = CatContextThreadLocal.get();
-        Cat.logRemoteCallClient(catContext, Cat.getManager().getDomain());
-        if (catContext != null) {
-            String rootId = catContext.getProperty(Cat.Context.ROOT);
-            String parentId = catContext.getProperty(Cat.Context.PARENT);
-            String childId = catContext.getProperty(Cat.Context.CHILD);
-
-            requestTemplate.header(CatConstantsExt.CAT_HTTP_HEADER_ROOT_MESSAGE_ID, rootId);
-            requestTemplate.header(CatConstantsExt.CAT_HTTP_HEADER_PARENT_MESSAGE_ID, parentId);
-            requestTemplate.header(CatConstantsExt.CAT_HTTP_HEADER_CHILD_MESSAGE_ID, childId);
-            requestTemplate.header(CatConstantsExt.APPLICATION_NAME, Cat.getManager().getDomain());
-
-            MDC.put("traceId", parentId);
-            logger.info(Cat.getManager().getDomain() + "开始Feign远程调用 : " + requestTemplate.method() + " 消息模型 : rootId = " + rootId + " parentId = " + parentId + " childId = " + childId);
+        if (catContext == null) {
+            return;
         }
+        Cat.logRemoteCallClient(catContext, Cat.getManager().getDomain());
+        String rootId = catContext.getProperty(Cat.Context.ROOT);
+        String parentId = catContext.getProperty(Cat.Context.PARENT);
+        String childId = catContext.getProperty(Cat.Context.CHILD);
+
+        requestTemplate.header(CatConstantsExt.CAT_HTTP_HEADER_ROOT_MESSAGE_ID, rootId);
+        requestTemplate.header(CatConstantsExt.CAT_HTTP_HEADER_PARENT_MESSAGE_ID, parentId);
+        requestTemplate.header(CatConstantsExt.CAT_HTTP_HEADER_CHILD_MESSAGE_ID, childId);
+        requestTemplate.header(CatConstantsExt.APPLICATION_NAME, Cat.getManager().getDomain());
+
+        MDC.put("traceId", parentId);
+        logger.info(Cat.getManager().getDomain() + "开始Feign远程调用 : " + requestTemplate.method() + " 消息模型 : rootId = " + rootId + " parentId = " + parentId + " childId = " + childId);
     }
 
     /**
@@ -163,7 +170,8 @@ public class FeignRequestInterceptor implements RequestInterceptor {
      * @param requestTemplate
      */
     private void initRequestHeader(RequestTemplate requestTemplate) {
-        requestTemplate.header(CONTENT_TYPE, MediaType.ALL_VALUE);
+        String[] mediaType = new String[]{MediaType.APPLICATION_JSON_UTF8_VALUE, MediaType.TEXT_PLAIN_VALUE};
+        requestTemplate.header(CONTENT_TYPE, mediaType);
         List<String> acceptableMediaTypes = Lists.newArrayList(MediaType.ALL_VALUE);
 
         requestTemplate.header(ACCEPT, acceptableMediaTypes);
@@ -185,6 +193,6 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         String body = requestTemplate.body() == null ? Strings.EMPTY : new String(requestTemplate.body(), Charset.forName("utf-8"));
         sb.append("Feign request BODY : ").append(body);
 
-        logger.debug("Feign request Info : {}", sb);
+        logger.info("Feign request Info : {}", sb);
     }
 }
