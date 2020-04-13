@@ -20,8 +20,6 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -54,12 +52,12 @@ public class MybatisConfiguration {
         PageInterceptor pageInterceptor = new PagePlugin().pageInterceptor();
         CatMybatisPlugin catMybatisPlugin = new CatMybatisPlugin(jdbcUrl);
         if (useCat) {
-            sqlSessionFactoryBean.setPlugins(new Interceptor[]{pageInterceptor,catMybatisPlugin});
+            sqlSessionFactoryBean.setPlugins(new Interceptor[]{pageInterceptor, catMybatisPlugin});
         } else {
             sqlSessionFactoryBean.setPlugins(new Interceptor[]{pageInterceptor});
         }
 
-        logger.info("sql session factory init finish >> {}", sqlSessionFactoryBean);
+        logger.info("sqlSessionFactory 加载cat拦截器 : {}", useCat);
         return sqlSessionFactoryBean.getObject();
     }
 
@@ -68,7 +66,6 @@ public class MybatisConfiguration {
     @Bean(name = "sqlSessionTemplate")
     public SqlSessionTemplate sqlSessionTemplate(@Qualifier("sqlSessionFactory") SqlSessionFactory sqlSessionFactory) {
         SqlSessionTemplate sqlSessionTemplate = new SqlSessionTemplate(sqlSessionFactory);
-        logger.info("sql session factory init finish >> {}", sqlSessionFactory);
 
         return sqlSessionTemplate;
     }
@@ -82,7 +79,7 @@ public class MybatisConfiguration {
     @Bean(name = "transactionManager")
     public DataSourceTransactionManager transactionManager() {
         DataSourceTransactionManager transactionManager = new DataSourceTransactionManager(dataSource);
-        logger.info("datasource transaction famanager init finish >> {}", transactionManager);
+        logger.info("hikari数据源事务加载完成");
 
         return transactionManager;
     }
