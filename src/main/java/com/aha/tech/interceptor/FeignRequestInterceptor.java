@@ -83,19 +83,15 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         if (attributes == null) {
             return;
         }
-
-//        copyOriginalRequestHeader(attributes, requestTemplate);
+        copyOriginalRequestHeader(attributes, requestTemplate);
         overwriteXenv(requestTemplate);
         buildTrace(requestTemplate);
         feignRequestLogging(requestTemplate);
-//        if (!PROFILE.startsWith(TEST_PROFILE_PREFIX)) {
-//            feignRequestLogging(requestTemplate);
-//        }
     }
 
     private void overwriteXenv(RequestTemplate requestTemplate) {
         XEnvDto xEnvDto = XEnvThreadLocal.get();
-        if (xEnvDto != null && xEnvDto.isOverwrite()) {
+        if (xEnvDto != null) {
             initHeaderFromEnv(xEnvDto, requestTemplate);
         }
     }
@@ -109,7 +105,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         HttpServletRequest request = attributes.getRequest();
         Enumeration<String> headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
-            String k = headerNames.nextElement();
+            String k = "Original_" + headerNames.nextElement();
             String v = request.getHeader(k);
             requestTemplate.header(k, v);
         }
