@@ -83,7 +83,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         if (attributes == null) {
             return;
         }
-        copyOriginalRequestHeader(attributes, requestTemplate);
+//        copyOriginalRequestHeader(attributes, requestTemplate);
         overwriteXenv(requestTemplate);
         buildTrace(requestTemplate);
         feignRequestLogging(requestTemplate);
@@ -186,8 +186,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
      */
     private void feignRequestLogging(RequestTemplate requestTemplate) {
         StringBuilder sb = new StringBuilder(System.lineSeparator());
-        sb.append("Feign request URI : ").append(requestTemplate.url()).append(System.lineSeparator());
-        sb.append("Feign request query : ").append(requestTemplate.queryLine()).append(System.lineSeparator());
+        sb.append("Feign request URI : ").append(requestTemplate.url()).append(requestTemplate.queryLine()).append(System.lineSeparator());
         sb.append("Feign request HEADER : ").append(requestTemplate.headers().toString()).append(System.lineSeparator());
         String body = requestTemplate.body() == null ? Strings.EMPTY : new String(requestTemplate.body(), Charset.forName("utf-8"));
         sb.append("Feign request BODY : ").append(body);
