@@ -62,7 +62,7 @@ public class DataSourceConfiguration {
         hikariDataSource.setMaximumPoolSize(maximumPoolSize);
         hikariDataSource.setMinimumIdle(minimumIdle);
         hikariDataSource.setPoolName("common-jdbc-pool");
-        logger.info("数据源加载完成 url : {}, connectionTimeout : {}, idleTimeout : {}, maximumPoolSize : {},minimumIdle : {}", jdbcUrl, connectionTimeout, idleTimeout, maximumPoolSize, minimumIdle);
+        logger.info("hikari数据源加载完成 url : {}, connectionTimeout : {}, idleTimeout : {}, maximumPoolSize : {},minimumIdle : {}", jdbcUrl, connectionTimeout, idleTimeout, maximumPoolSize, minimumIdle);
         return hikariDataSource;
     }
 
