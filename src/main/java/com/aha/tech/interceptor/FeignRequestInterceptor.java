@@ -105,9 +105,9 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         HttpServletRequest request = attributes.getRequest();
         Enumeration<String> headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
-            String k = "Original_" + headerNames.nextElement();
+            String k = headerNames.nextElement();
             String v = request.getHeader(k);
-            requestTemplate.header(k, v);
+            requestTemplate.header("Original_" + k, v);
         }
     }
 
@@ -187,6 +187,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
     private void feignRequestLogging(RequestTemplate requestTemplate) {
         StringBuilder sb = new StringBuilder(System.lineSeparator());
         sb.append("Feign request URI : ").append(requestTemplate.url()).append(System.lineSeparator());
+        sb.append("Feign request query : ").append(requestTemplate.queryLine()).append(System.lineSeparator());
         sb.append("Feign request HEADER : ").append(requestTemplate.headers().toString()).append(System.lineSeparator());
         String body = requestTemplate.body() == null ? Strings.EMPTY : new String(requestTemplate.body(), Charset.forName("utf-8"));
         sb.append("Feign request BODY : ").append(body);
