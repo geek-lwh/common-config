@@ -65,7 +65,7 @@ public class RedissonConfig {
             config.useSingleServer().setPassword(password);
         }
 
-        logger.info("redisson init finish >> {}", config);
+        logger.info("redisson数据源初始化完成 host : {} , port : {} , database : {} timeout : {}", host, port, database, timeout);
         return Redisson.create(config);
     }
 }

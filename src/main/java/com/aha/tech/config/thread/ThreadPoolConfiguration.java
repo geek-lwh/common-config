@@ -38,7 +38,7 @@ public class ThreadPoolConfiguration {
         executor.setQueueCapacity(queueCapacity);
         executor.setThreadNamePrefix(threadNamePrefix);
         executor.setWaitForTasksToCompleteOnShutdown(true);
-        logger.info("core thread pool init finish >> {}", executor);
+        logger.info("核心线程池初始化完成 corePoolSize : {} , maxPoolSize : {} , queueCapacity : {} ", corePoolSize, maxPoolSize, queueCapacity);
         return executor;
     }
 
@@ -50,7 +50,7 @@ public class ThreadPoolConfiguration {
         executor.setQueueCapacity(1000);
         executor.setThreadNamePrefix("non-core-thread-pool");
         executor.setWaitForTasksToCompleteOnShutdown(true);
-        logger.info("non core thread pool init finish >> {}", executor);
+        logger.info("非核心线程池初始化完成 corePoolSize : 20 , maxPoolSize : 40 , queueCapacity : 1000 ");
         return executor;
     }
 

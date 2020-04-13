@@ -2,6 +2,8 @@ package com.aha.tech.config.mongodb;
 
 import com.mongodb.*;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -27,6 +29,9 @@ import java.util.List;
 @Configuration
 @ConditionalOnProperty(name = "use.common.mongodb")
 public class MongodbConfiguration extends AbstractMongoConfiguration {
+
+    public final Logger logger = LoggerFactory.getLogger(MongodbConfiguration.class);
+
 
     @Value("${common.mongodb.host}")
     private String host;
@@ -77,6 +82,7 @@ public class MongodbConfiguration extends AbstractMongoConfiguration {
             return new MongoClient(serverAddressList, MongoCredential.createCredential(username, database, pwd.toCharArray()), mongoClientOptions);
         }
 
+        logger.info("mongo数据源加载成功 host : {} , connectTimeout : {} , socketTimeout : {} , maxWaitTime : {} , writeConcern : {}", host, connectTimeout, socketTimeout, maxWaitTime, WriteConcern.MAJORITY);
         return new MongoClient(host, mongoClientOptions);
     }
 

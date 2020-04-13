@@ -38,7 +38,7 @@ public class TaskThreadPoolConfiguration {
         taskScheduler.setErrorHandler(t -> logger.error("Unexpected error occurred in scheduled task.", t));
         taskScheduler.initialize();
         taskScheduler.setWaitForTasksToCompleteOnShutdown(true);
-        logger.info("task thread pool init finish >> {}", taskScheduler);
+        logger.info("定时任务线程池初始化完成 poolSize : {} ", poolSize);
 
         return taskScheduler;
     }

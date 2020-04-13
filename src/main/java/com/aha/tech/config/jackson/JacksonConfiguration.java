@@ -35,7 +35,7 @@ import java.util.TimeZone;
  * @Date: 2018/12/14
  */
 @Configuration
-@ConditionalOnProperty(name = "use.common.jackson",matchIfMissing = true)
+@ConditionalOnProperty(name = "use.common.jackson", matchIfMissing = true)
 public class JacksonConfiguration {
 
     public final Logger logger = LoggerFactory.getLogger(JacksonConfiguration.class);
@@ -78,7 +78,7 @@ public class JacksonConfiguration {
 
         objectMapper.registerModule(javaTimeModule);
 
-        logger.info("jackson objectMapper init finish >> {}", objectMapper);
+        logger.info("json序列化初始化完成 [jackson] dateFormat : {} , namingStrategy : {} ", DATE_FORMAT_FULL, objectMapper.getPropertyNamingStrategy());
         return objectMapper;
     }
 

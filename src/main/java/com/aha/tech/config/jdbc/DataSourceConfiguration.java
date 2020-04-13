@@ -23,7 +23,7 @@ import javax.sql.DataSource;
 @ConditionalOnProperty(name = "use.common.jdbc", matchIfMissing = true)
 public class DataSourceConfiguration {
 
-    public  final Logger logger = LoggerFactory.getLogger(DataSourceConfiguration.class);
+    public final Logger logger = LoggerFactory.getLogger(DataSourceConfiguration.class);
 
     @Value("${common.jdbc.driverClassName:com.mysql.jdbc.Driver}")
     private String driverClassName;
@@ -62,7 +62,7 @@ public class DataSourceConfiguration {
         hikariDataSource.setMaximumPoolSize(maximumPoolSize);
         hikariDataSource.setMinimumIdle(minimumIdle);
         hikariDataSource.setPoolName("common-jdbc-pool");
-        logger.info("hikari datasource init finish >> {}",hikariDataSource);
+        logger.info("数据源加载完成 url : {}, connectionTimeout : {}, idleTimeout : {}, maximumPoolSize : {},minimumIdle : {}", jdbcUrl, connectionTimeout, idleTimeout, maximumPoolSize, minimumIdle);
         return hikariDataSource;
     }
 

@@ -95,7 +95,7 @@ public class HttpClientConfiguration {
         // 限制每个host最大并发请求数,这里 max = x,则具体某个host为 x/2,客户端根据业务自己配置
         poolingConnectionManager.setDefaultMaxPerRoute(maxTotalConnections / 2);
 
-        logger.info("http pool client init finish >> {}", poolingConnectionManager);
+        logger.info("http连接池初始化完成 最大并发请求数 : {} ,最大连接数", maxTotalConnections / 2, maxTotalConnections);
         return poolingConnectionManager;
     }
 
@@ -118,12 +118,10 @@ public class HttpClientConfiguration {
 
                 if (value != null && param.equalsIgnoreCase("timeout")) {
                     long responseTimeout = Long.parseLong(value) * 1000;
-                    logger.debug("keepAlive timeout init finish >> {}", responseTimeout);
                     return responseTimeout;
                 }
             }
 
-            logger.debug("keepAlive timeout init finish >> {}", keepaliveTimeout);
             return keepaliveTimeout;
         };
     }
@@ -146,7 +144,7 @@ public class HttpClientConfiguration {
                 .setKeepAliveStrategy(connectionKeepAliveStrategy())
                 .build();
 
-        logger.info("closeable http client init finish >> {}", httpClientBuilder);
+        logger.info("http客户端初始化完成 requestTimeout : {} , connectTimeout : {} , socketTimeout : {}", requestTimeout, connectTimeout, socketTimeout);
 
         return httpClientBuilder;
     }

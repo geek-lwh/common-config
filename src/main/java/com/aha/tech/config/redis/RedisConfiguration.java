@@ -74,7 +74,6 @@ public class RedisConfiguration {
         template.setEnableDefaultSerializer(false);
         template.setConnectionFactory(redisConnectionFactory);
 
-        logger.info("redis template init finish >. {}", template);
         return template;
     }
 
@@ -106,6 +105,8 @@ public class RedisConfiguration {
         config.setMaxWaitMillis(maxWait);
         LettuceClientConfiguration.LettuceClientConfigurationBuilder builder = LettucePoolingClientConfiguration.builder().poolConfig(config);
         LettuceClientConfiguration clientConfig = builder.build();
+
+        logger.info("lettuceClient配置加载完成 maxActive : {} , maxIdle : {} , minIdle : {} , maxWait : {}", maxActive, maxIdle, minIdle, maxWait);
         return clientConfig;
     }
 
@@ -123,7 +124,8 @@ public class RedisConfiguration {
         config.setPassword(RedisPassword.of(password));
         config.setDatabase(database);
 
-        logger.info("redis config init finish >> {}", config);
+        logger.info("redis数据源加载完成 host : {}, port : {} database : {}", host, port, database);
+
         return config;
     }
 
@@ -136,7 +138,6 @@ public class RedisConfiguration {
      */
     private LettuceConnectionFactory createLettuceConnectionFactory(RedisStandaloneConfiguration redisStandaloneConfiguration, LettuceClientConfiguration clientConfiguration) {
         LettuceConnectionFactory factory = new LettuceConnectionFactory(redisStandaloneConfiguration, clientConfiguration);
-        logger.info("lettuce connection factory init finish >> {}", factory);
 
         return factory;
     }
