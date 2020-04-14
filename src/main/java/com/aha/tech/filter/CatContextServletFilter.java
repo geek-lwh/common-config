@@ -1,13 +1,12 @@
 package com.aha.tech.filter;
 
-import com.aha.tech.constants.CatConstantsExt;
+import com.aha.tech.constant.CatConstantsExt;
 import com.aha.tech.filter.cat.CatContext;
 import com.aha.tech.threadlocal.CatContextThreadLocal;
 import com.dianping.cat.Cat;
 import com.dianping.cat.CatConstants;
 import com.dianping.cat.message.Message;
 import com.dianping.cat.message.Transaction;
-import org.slf4j.MDC;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -38,15 +37,12 @@ public class CatContextServletFilter implements Filter {
             Cat.logRemoteCallServer(catContext);
         }
 
-        String traceId = request.getHeader(CatConstantsExt.TRACE_ID);
-        MDC.put("traceId", traceId);
         CatContextThreadLocal.set(catContext);
         Transaction t = Cat.newTransaction(CatConstants.TYPE_URL, request.getRequestURI());
 
         try {
             Cat.logEvent(CatConstantsExt.Type_URL_METHOD, request.getMethod(), Message.SUCCESS, request.getRequestURL().toString());
             Cat.logEvent(CatConstantsExt.Type_URL_CLIENT, request.getRemoteHost());
-            Cat.logEvent(CatConstantsExt.TRACE_ID, traceId);
 
             filterChain.doFilter(servletRequest, servletResponse);
             t.setStatus(Transaction.SUCCESS);

@@ -2,9 +2,11 @@ package com.aha.tech.filter;
 
 import com.aha.tech.filter.wrapper.RequestWrapper;
 import com.aha.tech.filter.wrapper.ResponseWrapper;
+import com.aha.tech.util.IdUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -30,6 +32,8 @@ public class RequestResponseLogFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        MDC.put(IdUtil.TRACE_ID, IdUtil.getAndSetTraceId());
+
         StringBuffer requestURL = request.getRequestURL();
         String queryString = request.getQueryString();
         String uri = StringUtils.isBlank(queryString) ? requestURL.toString() : requestURL.append("?").append(queryString).toString();
@@ -56,13 +60,6 @@ public class RequestResponseLogFilter extends OncePerRequestFilter {
         requestLog.append("body : ").append(System.lineSeparator());
 
         requestLog.append(requestWrapper.getBody());
-//        if (requestWrapper != null) {
-//            BufferedReader bufferedReader = requestWrapper.getReader();
-//            String line;
-//            while ((line = bufferedReader.readLine()) != null) {
-//                requestLog.append(requestWrapper.);
-//            }
-//        }
 
         logger.info("{}", requestLog);
 

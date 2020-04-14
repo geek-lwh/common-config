@@ -1,11 +1,12 @@
 package com.aha.tech.interceptor;
 
 import com.aha.tech.annotation.XEnv;
-import com.aha.tech.constants.CatConstantsExt;
+import com.aha.tech.constant.CatConstantsExt;
 import com.aha.tech.filter.cat.CatContext;
 import com.aha.tech.model.XEnvDto;
 import com.aha.tech.threadlocal.CatContextThreadLocal;
 import com.aha.tech.threadlocal.XEnvThreadLocal;
+import com.aha.tech.util.IdUtil;
 import com.dianping.cat.Cat;
 import com.google.common.collect.Lists;
 import feign.RequestInterceptor;
@@ -14,7 +15,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -76,6 +76,8 @@ public class FeignRequestInterceptor implements RequestInterceptor {
 
     public static final String TEST_PROFILE_PREFIX = "test";
 
+    public static final String X_TRACE_ID = "X-Trace-Id";
+
     @Override
     public void apply(RequestTemplate requestTemplate) {
         initRequestHeader(requestTemplate);
@@ -83,7 +85,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         if (attributes == null) {
             return;
         }
-//        copyOriginalRequestHeader(attributes, requestTemplate);
+
         overwriteXenv(requestTemplate);
         buildTrace(requestTemplate);
         feignRequestLogging(requestTemplate);
@@ -130,7 +132,6 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         requestTemplate.header(CatConstantsExt.CAT_HTTP_HEADER_CHILD_MESSAGE_ID, childId);
         requestTemplate.header(CatConstantsExt.APPLICATION_NAME, Cat.getManager().getDomain());
 
-        MDC.put("traceId", parentId);
         logger.info(Cat.getManager().getDomain() + "开始Feign远程调用 : " + requestTemplate.method() + " 消息模型 : rootId = " + rootId + " parentId = " + parentId + " childId = " + childId);
     }
 
@@ -178,6 +179,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         requestTemplate.header(HTTP_HEADER_X_REQUESTED_WITH_KEY, HTTP_HEADER_X_REQUESTED_WITH_VALUE);
         requestTemplate.header(CONTENT_ENCODING, CHARSET_ENCODING);
         requestTemplate.header(X_TOKEN_KEY, X_TOKEN);
+        requestTemplate.header(IdUtil.TRACE_ID, IdUtil.getAndSetTraceId());
     }
 
     /**

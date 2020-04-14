@@ -1,4 +1,4 @@
-package com.aha.tech.constants;
+package com.aha.tech.constant;
 
 import com.dianping.cat.CatConstants;
 
