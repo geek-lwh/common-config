@@ -1,17 +1,16 @@
 package com.aha.tech.interceptor;
 
 import com.aha.tech.annotation.XEnv;
-import com.aha.tech.constant.CatConstantsExt;
+import com.aha.tech.constant.CatConstant;
 import com.aha.tech.filter.cat.CatContext;
 import com.aha.tech.model.XEnvDto;
 import com.aha.tech.threadlocal.CatContextThreadLocal;
 import com.aha.tech.threadlocal.XEnvThreadLocal;
-import com.aha.tech.util.IdUtil;
+import com.aha.tech.util.MDCUtil;
 import com.dianping.cat.Cat;
 import com.google.common.collect.Lists;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +24,10 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.List;
+
+import static com.aha.tech.constant.HeaderConstant.*;
 
 /**
  * @Author: luweihong
@@ -39,44 +39,6 @@ import java.util.List;
 public class FeignRequestInterceptor implements RequestInterceptor {
 
     private final Logger logger = LoggerFactory.getLogger(FeignRequestInterceptor.class);
-
-    private static final String USERNAME = "visitor";
-
-    private static final String PASSWORD = "28ad87ef9fdce5d12dea093b860e8772";
-
-    private static final String BASE64_ENCODE = new String(Base64.encodeBase64(String.format("%s:%s", USERNAME, PASSWORD).getBytes()));
-
-    public static final String CONTENT_TYPE = "Content-Type";
-
-    public static final String APPLICATION_JSON_UTF8 = "application/json;charset=UTF-8";
-
-    public static final String CONNECTION = "Connection";
-
-    private static final String HTTP_HEADER_CONNECTION_VALUE = "keep-alive";
-
-    private static final String HTTP_HEADER_X_REQUESTED_WITH_KEY = "X-Requested-With";
-
-    private static final String HTTP_HEADER_X_REQUESTED_WITH_VALUE = "XMLHttpRequest";
-
-    private static final String HTTP_HEADER_KEEP_ALIVE_KEY = "Keep-Alive";
-
-    private static final String HTTP_HEADER_KEEP_ALIVE_VALUE = "timeout=60";
-
-    public static final String CONTENT_ENCODING = "Content-Encoding";
-
-    public static final String CHARSET_ENCODING = StandardCharsets.UTF_8.displayName();
-
-    public static final String X_TOKEN_KEY = "X-TOKEN";
-
-    public static final String X_TOKEN = "3p1vN4urMs1X2fyMUM0KkhlwoIms04";
-
-    public static final String ACCEPT = "accept";
-
-    public static final String PROFILE = System.getProperty("spring.profiles.active", "prod");
-
-    public static final String TEST_PROFILE_PREFIX = "test";
-
-    public static final String X_TRACE_ID = "X-Trace-Id";
 
     @Override
     public void apply(RequestTemplate requestTemplate) {
@@ -127,10 +89,10 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         String parentId = catContext.getProperty(Cat.Context.PARENT);
         String childId = catContext.getProperty(Cat.Context.CHILD);
 
-        requestTemplate.header(CatConstantsExt.CAT_HTTP_HEADER_ROOT_MESSAGE_ID, rootId);
-        requestTemplate.header(CatConstantsExt.CAT_HTTP_HEADER_PARENT_MESSAGE_ID, parentId);
-        requestTemplate.header(CatConstantsExt.CAT_HTTP_HEADER_CHILD_MESSAGE_ID, childId);
-        requestTemplate.header(CatConstantsExt.APPLICATION_NAME, Cat.getManager().getDomain());
+        requestTemplate.header(CatConstant.CAT_HTTP_HEADER_ROOT_MESSAGE_ID, rootId);
+        requestTemplate.header(CatConstant.CAT_HTTP_HEADER_PARENT_MESSAGE_ID, parentId);
+        requestTemplate.header(CatConstant.CAT_HTTP_HEADER_CHILD_MESSAGE_ID, childId);
+        requestTemplate.header(CatConstant.APPLICATION_NAME, Cat.getManager().getDomain());
 
         logger.info(Cat.getManager().getDomain() + "开始Feign远程调用 : " + requestTemplate.method() + " 消息模型 : rootId = " + rootId + " parentId = " + parentId + " childId = " + childId);
     }
@@ -179,7 +141,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         requestTemplate.header(HTTP_HEADER_X_REQUESTED_WITH_KEY, HTTP_HEADER_X_REQUESTED_WITH_VALUE);
         requestTemplate.header(CONTENT_ENCODING, CHARSET_ENCODING);
         requestTemplate.header(X_TOKEN_KEY, X_TOKEN);
-        requestTemplate.header(IdUtil.TRACE_ID, IdUtil.getAndSetTraceId());
+        requestTemplate.header(TRACE_ID, MDCUtil.getTraceId());
     }
 
     /**

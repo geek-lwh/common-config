@@ -6,7 +6,7 @@ import com.dianping.cat.CatConstants;
  * @Author: luweihong
  * @Date: 2019/12/30
  */
-public class CatConstantsExt extends CatConstants {
+public class CatConstant extends CatConstants {
 
     public static final String CROSS_CONSUMER = "PigeonCall";
 

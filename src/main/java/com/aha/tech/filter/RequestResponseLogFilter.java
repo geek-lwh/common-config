@@ -2,11 +2,10 @@ package com.aha.tech.filter;
 
 import com.aha.tech.filter.wrapper.RequestWrapper;
 import com.aha.tech.filter.wrapper.ResponseWrapper;
-import com.aha.tech.util.IdUtil;
+import com.aha.tech.util.MDCUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -32,7 +31,7 @@ public class RequestResponseLogFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        MDC.put(IdUtil.TRACE_ID, IdUtil.getAndSetTraceId());
+        MDCUtil.getAndSetTraceId(request);
 
         StringBuffer requestURL = request.getRequestURL();
         String queryString = request.getQueryString();
