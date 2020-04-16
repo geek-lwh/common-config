@@ -36,6 +36,7 @@ public class CatContextServletFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         CatContext catContext = initCatContext(request);
+        Cat.getManager().setTraceMode(true);
 
         Transaction t = Cat.newTransaction(CatConstant.CROSS_SERVER, request.getRequestURI());
         try {
@@ -78,7 +79,7 @@ public class CatContextServletFilter implements Filter {
 
         String callServerIp = request.getHeader(HeaderConstant.CONSUMER_SERVER_IP);
         if (StringUtils.isBlank(callServerIp)) {
-            callServerIp = request.getRemoteHost();
+            callServerIp = request.getRemoteAddr();
         }
         catContext.addProperty(CatConstant.PROVIDER_APPLICATION_IP, callServerIp);
 
