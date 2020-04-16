@@ -89,6 +89,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         String parentId = catContext.getProperty(Cat.Context.PARENT);
         String childId = catContext.getProperty(Cat.Context.CHILD);
 
+        requestTemplate.header(CatConstant.PROVIDER_CALL_APP, Cat.getManager().getDomain());
         requestTemplate.header(CatConstant.CAT_HTTP_HEADER_ROOT_MESSAGE_ID, rootId);
         requestTemplate.header(CatConstant.CAT_HTTP_HEADER_PARENT_MESSAGE_ID, parentId);
         requestTemplate.header(CatConstant.CAT_HTTP_HEADER_CHILD_MESSAGE_ID, childId);

@@ -20,7 +20,12 @@ public class MDCUtil {
      * @return
      */
     public static String getTraceId() {
-        return MDC.get(TRACE_ID);
+        String traceId = MDC.get(MDCUtil.TRACE_ID);
+        if (StringUtils.isBlank(traceId)) {
+            traceId = Cat.createMessageId();
+        }
+
+        return traceId;
     }
 
     /**

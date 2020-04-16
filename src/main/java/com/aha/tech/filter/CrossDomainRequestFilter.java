@@ -40,4 +40,9 @@ public class CrossDomainRequestFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    @Override
+    public void destroy() {
+
+    }
+
 }

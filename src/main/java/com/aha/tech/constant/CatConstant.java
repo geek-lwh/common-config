@@ -48,6 +48,7 @@ public class CatConstant extends CatConstants {
      */
     public static final String Type_URL_METHOD = "URL.method";
     public static final String Type_URL_CLIENT = "URL.client";
+    public static final String Type_URL_TRACE_ID = "URL.traceId";
     public static final String Type_URL_FORWORD = "URL.forword";
 
     public static final String Type_Service = "Service";
@@ -72,5 +73,4 @@ public class CatConstant extends CatConstants {
     public static final String CAT_HTTP_HEADER_ROOT_MESSAGE_ID = "X-CAT-ROOT-MESSAGE-ID";
     public static final String CAT_HTTP_HEADER_PARENT_MESSAGE_ID = "X-CAT-ROOT-PARENT-ID";
     public static final String CAT_HTTP_HEADER_CHILD_MESSAGE_ID = "X-CAT-ROOT-CHILD-ID";
-    public static final String TRACE_ID = "X-TRACE-ID";
 }

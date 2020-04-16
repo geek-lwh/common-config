@@ -4,6 +4,7 @@ import com.aha.tech.constant.CatConstant;
 import com.aha.tech.constant.OrderedConstant;
 import com.aha.tech.filter.cat.CatContext;
 import com.aha.tech.threadlocal.CatContextThreadLocal;
+import com.aha.tech.util.MDCUtil;
 import com.dianping.cat.Cat;
 import com.dianping.cat.CatConstants;
 import com.dianping.cat.message.Message;
@@ -52,6 +53,7 @@ public class CatContextServletFilter implements Filter {
         try {
             Cat.logEvent(CatConstant.Type_URL_METHOD, request.getMethod(), Message.SUCCESS, request.getRequestURL().toString());
             Cat.logEvent(CatConstant.Type_URL_CLIENT, request.getRemoteHost());
+            Cat.logEvent(CatConstant.Type_URL_TRACE_ID, MDCUtil.getTraceId());
 
             filterChain.doFilter(servletRequest, servletResponse);
             t.setStatus(Transaction.SUCCESS);
