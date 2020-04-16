@@ -1,20 +1,29 @@
 package com.aha.tech.filter;
 
 import com.aha.tech.constant.CatConstant;
+import com.aha.tech.constant.OrderedConstant;
 import com.aha.tech.filter.cat.CatContext;
 import com.aha.tech.threadlocal.CatContextThreadLocal;
 import com.dianping.cat.Cat;
 import com.dianping.cat.CatConstants;
 import com.dianping.cat.message.Message;
 import com.dianping.cat.message.Transaction;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.*;
+import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 
 /**
  * @Author: luweihong
  * @Date: 2019/11/19
  */
+@ConditionalOnProperty(name = "use.common.cat")
+@Component
+@Order(OrderedConstant.CAT_CONTEXT_FILTER_ORDERED)
+@WebFilter(filterName = "CatContextServletFilter", urlPatterns = "/*")
 public class CatContextServletFilter implements Filter {
 
 

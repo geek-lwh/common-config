@@ -1,8 +1,8 @@
 package com.aha.tech.filter;
 
+import com.aha.tech.constant.OrderedConstant;
 import com.aha.tech.filter.wrapper.RequestWrapper;
 import com.aha.tech.filter.wrapper.ResponseWrapper;
-import com.aha.tech.util.MDCUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,8 +22,8 @@ import java.util.Enumeration;
 /**
  * luweihong
  */
-@Order(1)
 @Component
+@Order(OrderedConstant.REQUEST_RESPONSE_FILTER_ORDERED)
 @WebFilter(filterName = "RequestResponseLogFilter", urlPatterns = "/*")
 public class RequestResponseLogFilter extends OncePerRequestFilter {
 
@@ -31,8 +31,6 @@ public class RequestResponseLogFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        MDCUtil.getAndSetTraceId(request);
-
         StringBuffer requestURL = request.getRequestURL();
         String queryString = request.getQueryString();
         String uri = StringUtils.isBlank(queryString) ? requestURL.toString() : requestURL.append("?").append(queryString).toString();

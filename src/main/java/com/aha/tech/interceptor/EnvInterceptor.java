@@ -17,19 +17,16 @@ public class EnvInterceptor implements HandlerInterceptor {
 
     private static final Logger logger = LoggerFactory.getLogger(EnvInterceptor.class);
 
-
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         XEnvDto xEnvDto = new XEnvDto(request);
         XEnvThreadLocal.set(xEnvDto);
-        logger.debug("set x-env : {}", xEnvDto);
         return true;
     }
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
         XEnvThreadLocal.remove();
-        logger.debug("remove x-env ");
     }
 
 }

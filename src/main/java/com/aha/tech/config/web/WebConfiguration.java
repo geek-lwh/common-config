@@ -83,6 +83,7 @@ public class WebConfiguration implements WebMvcConfigurer {
 
         registry.addInterceptor(new EnvInterceptor())
                 .addPathPatterns("/**").excludePathPatterns(excludePathPatterns);
+
     }
 
 }

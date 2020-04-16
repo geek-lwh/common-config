@@ -141,6 +141,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         requestTemplate.header(HTTP_HEADER_X_REQUESTED_WITH_KEY, HTTP_HEADER_X_REQUESTED_WITH_VALUE);
         requestTemplate.header(CONTENT_ENCODING, CHARSET_ENCODING);
         requestTemplate.header(X_TOKEN_KEY, X_TOKEN);
+
         requestTemplate.header(TRACE_ID, MDCUtil.getTraceId());
     }
 
