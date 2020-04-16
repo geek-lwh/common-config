@@ -47,4 +47,8 @@ public class HeaderConstant {
     public static final String TEST_PROFILE_PREFIX = "test";
 
     public static final String TRACE_ID = "X-Trace-Id";
+
+    public static final String CONSUMER_SERVER_NAME = "X-Consumer-Server-Name";
+
+    public static final String CONSUMER_SERVER_IP = "X-Consumer-Server-Ip";
 }

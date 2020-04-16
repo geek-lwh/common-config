@@ -2,10 +2,12 @@ package com.aha.tech.interceptor;
 
 import com.aha.tech.annotation.XEnv;
 import com.aha.tech.constant.CatConstant;
+import com.aha.tech.constant.HeaderConstant;
 import com.aha.tech.filter.cat.CatContext;
 import com.aha.tech.model.XEnvDto;
 import com.aha.tech.threadlocal.CatContextThreadLocal;
 import com.aha.tech.threadlocal.XEnvThreadLocal;
+import com.aha.tech.util.IpUtil;
 import com.aha.tech.util.MDCUtil;
 import com.dianping.cat.Cat;
 import com.google.common.collect.Lists;
@@ -93,9 +95,12 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         requestTemplate.header(CatConstant.CAT_HTTP_HEADER_ROOT_MESSAGE_ID, rootId);
         requestTemplate.header(CatConstant.CAT_HTTP_HEADER_PARENT_MESSAGE_ID, parentId);
         requestTemplate.header(CatConstant.CAT_HTTP_HEADER_CHILD_MESSAGE_ID, childId);
-        requestTemplate.header(CatConstant.APPLICATION_NAME, Cat.getManager().getDomain());
-
-        logger.info(Cat.getManager().getDomain() + "开始Feign远程调用 : " + requestTemplate.method() + " 消息模型 : rootId = " + rootId + " parentId = " + parentId + " childId = " + childId);
+        requestTemplate.header(HeaderConstant.CONSUMER_SERVER_NAME, Cat.getManager().getDomain());
+        try {
+            requestTemplate.header(HeaderConstant.CONSUMER_SERVER_IP, IpUtil.getLocalHostAddress());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -142,7 +147,6 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         requestTemplate.header(HTTP_HEADER_X_REQUESTED_WITH_KEY, HTTP_HEADER_X_REQUESTED_WITH_VALUE);
         requestTemplate.header(CONTENT_ENCODING, CHARSET_ENCODING);
         requestTemplate.header(X_TOKEN_KEY, X_TOKEN);
-
         requestTemplate.header(TRACE_ID, MDCUtil.getTraceId());
     }
 
@@ -157,6 +161,6 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         String body = requestTemplate.body() == null ? Strings.EMPTY : new String(requestTemplate.body(), Charset.forName("utf-8"));
         sb.append("Feign request BODY : ").append(body);
 
-        logger.info("Feign request Info : {}", sb);
+        logger.info("Feign request INFO : {}", sb);
     }
 }

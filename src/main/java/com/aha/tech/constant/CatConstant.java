@@ -15,7 +15,6 @@ public class CatConstant extends CatConstants {
      */
     public static final String CROSS_SERVER = "PigeonService";
 
-    public static final String PROVIDER_APPLICATION_NAME = "serverApplicationName";
 
     public static final String CONSUMER_CALL_SERVER = "PigeonCall.server";
 
@@ -25,10 +24,17 @@ public class CatConstant extends CatConstants {
 
     public static final String PROVIDER_CALL_SERVER = "PigeonService.client";
 
+
+    public static final String PROVIDER_APPLICATION_NAME = "serverApplicationName";
+
+    public static final String PROVIDER_APPLICATION_IP = "serverApplicationIp";
+
     /**
      * 客户端调用标识
      */
     public static final String PROVIDER_CALL_APP = "PigeonService.app";
+
+    public static final String PROVIDER_TRACE_ID = "PigeonService.traceId";
 
     public static final String FORK_MESSAGE_ID = "m_forkedMessageId";
 
@@ -38,17 +44,13 @@ public class CatConstant extends CatConstants {
 
     public static final String INTERFACE_NAME = "interfaceName";
 
-    /**
-     * 客户端调用的服务名称 -> 最好是Cat.getManager().getDomain()获取
-     */
-    public static final String APPLICATION_NAME = "application.name";
+    public static final String DEFAULT_APPLICATION_NAME = "Gatewayserver";
 
     /**
      * Type 常量
      */
     public static final String Type_URL_METHOD = "URL.method";
     public static final String Type_URL_CLIENT = "URL.client";
-    public static final String Type_URL_TRACE_ID = "URL.traceId";
     public static final String Type_URL_FORWORD = "URL.forword";
 
     public static final String Type_Service = "Service";
