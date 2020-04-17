@@ -36,12 +36,11 @@ public class CatContextServletFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         CatContext catContext = initCatContext(request);
-        Cat.getManager().setTraceMode(true);
 
         Transaction t = Cat.newTransaction(CatConstant.CROSS_SERVER, request.getRequestURI());
         try {
             Cat.logEvent(CatConstant.PROVIDER_CALL_APP, catContext.getProperty(CatConstant.PROVIDER_APPLICATION_NAME));
-            Cat.logEvent(CatConstant.PROVIDER_CALL_SERVER, catContext.getProperty(CatConstant.PROVIDER_APPLICATION_IP));
+            Cat.logEvent(CatConstant.PROVIDER_CALL_IP, catContext.getProperty(CatConstant.PROVIDER_APPLICATION_IP));
             Cat.logEvent(CatConstant.PROVIDER_TRACE_ID, MDCUtil.getTraceId());
 
             filterChain.doFilter(servletRequest, servletResponse);
@@ -73,7 +72,7 @@ public class CatContextServletFilter implements Filter {
 
         String callServerName = request.getHeader(HeaderConstant.CONSUMER_SERVER_NAME);
         if (StringUtils.isBlank(callServerName)) {
-            callServerName = CatConstant.DEFAULT_APPLICATION_NAME;
+            callServerName = request.getRemoteHost();
         }
         catContext.addProperty(CatConstant.PROVIDER_APPLICATION_NAME, callServerName);
 
@@ -83,7 +82,6 @@ public class CatContextServletFilter implements Filter {
         }
         catContext.addProperty(CatConstant.PROVIDER_APPLICATION_IP, callServerIp);
 
-
         if (catContext.getProperty(Cat.Context.ROOT) == null) {
             // 当前项目的app.id
             Cat.logRemoteCallClient(catContext, Cat.getManager().getDomain());
@@ -92,6 +90,7 @@ public class CatContextServletFilter implements Filter {
         }
 
         CatContextThreadLocal.set(catContext);
+        Cat.getManager().setTraceMode(true);
 
         return catContext;
     }

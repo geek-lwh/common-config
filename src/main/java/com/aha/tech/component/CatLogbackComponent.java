@@ -18,13 +18,6 @@ public class CatLogbackComponent extends AppenderBase<ILoggingEvent> {
     @Override
     protected void append(ILoggingEvent event) {
         try {
-//            Level level = event.getLevel();
-//
-//            if (level.isGreaterOrEqual(Level.ERROR)) {
-//                logError(event);
-//            } else {
-//                logTrace(event);
-//            }
             logTrace(event);
         } catch (Exception ex) {
             throw new LogbackException(event.getFormattedMessage(), ex);

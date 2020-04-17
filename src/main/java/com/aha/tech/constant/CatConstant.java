@@ -22,7 +22,6 @@ public class CatConstant extends CatConstants {
 
     public static final String CONSUMER_CALL_PORT = "PigeonCall.port";
 
-    public static final String PROVIDER_CALL_SERVER = "PigeonService.client";
 
 
     public static final String PROVIDER_APPLICATION_NAME = "serverApplicationName";
@@ -34,7 +33,9 @@ public class CatConstant extends CatConstants {
      */
     public static final String PROVIDER_CALL_APP = "PigeonService.app";
 
-    public static final String PROVIDER_TRACE_ID = "PigeonService.traceId";
+    public static final String PROVIDER_TRACE_ID = "PigeonService.tId";
+
+    public static final String PROVIDER_CALL_IP = "PigeonService.ip";
 
     public static final String FORK_MESSAGE_ID = "m_forkedMessageId";
 
@@ -43,8 +44,6 @@ public class CatConstant extends CatConstants {
     public static final String FORK_PARENT_MESSAGE_ID = "m_parentMessageId";
 
     public static final String INTERFACE_NAME = "interfaceName";
-
-    public static final String DEFAULT_APPLICATION_NAME = "Gatewayserver";
 
     /**
      * Type 常量
