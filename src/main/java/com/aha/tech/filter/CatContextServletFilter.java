@@ -90,7 +90,6 @@ public class CatContextServletFilter implements Filter {
         }
 
         CatContextThreadLocal.set(catContext);
-        Cat.getManager().setTraceMode(true);
 
         return catContext;
     }

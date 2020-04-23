@@ -54,4 +54,12 @@ public class MDCUtil {
         return tId;
     }
 
+    /**
+     * 获取traceId
+     * @return
+     */
+    public static void putTraceId(String traceId) {
+        MDC.put(TRACE_ID, traceId);
+    }
+
 }
