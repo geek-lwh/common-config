@@ -45,6 +45,8 @@ def springBootVersion = '2.0.3.RELEASE'
 dependencies {
     // 3-part tool dependency
     compile("com.google.guava:guava:23.0")
+
+    
     compile("org.apache.commons:commons-lang3:3.7")
     compile("com.alibaba:fastjson:1.2.47")
     compile("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.4")
@@ -102,7 +104,9 @@ dependencies {
     // metrics
     compile("io.micrometer:micrometer-registry-prometheus:1.0.5")
     // cat
-    compile("com.dianping.cat:cat-client:3.0.0")
+    compile("com.aha.monitor:cat-client:3.0.1")
+    compile("org.unidal.framework:foundation-service:2.5.0")
+
 }
 
 //打包源码
@@ -113,7 +117,7 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 
 
 def name = 'aha-commons-config'
-version = '3.3.1'
+version = '3.3.4'
 def group = 'com.aha.public'
 
 //上传jar命令 gradle publish
