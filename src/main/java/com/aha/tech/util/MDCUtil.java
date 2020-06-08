@@ -3,6 +3,8 @@ package com.aha.tech.util;
 import com.aha.tech.constant.HeaderConstant;
 import com.dianping.cat.Cat;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import javax.servlet.http.HttpServletRequest;
@@ -12,6 +14,9 @@ import javax.servlet.http.HttpServletRequest;
  * @Date: 2020/4/14
  */
 public class MDCUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(MDCUtil.class);
+
 
     public static final String TRACE_ID = "traceId";
 
@@ -36,6 +41,7 @@ public class MDCUtil {
     public static String initTraceId(HttpServletRequest request) {
         String tId = request.getHeader(HeaderConstant.TRACE_ID);
         if (StringUtils.isBlank(tId)) {
+
             tId = Cat.createMessageId();
         }
 
