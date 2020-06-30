@@ -83,12 +83,15 @@ public class TomcatConfiguration {
     @Value("${common.server.tomcat.maxRequestSize:10MB}")
     private String maxRequestSize;
 
+    @Value("${common.server.tomcat.keepAliveTimeout:30000}")
+    private String keepAliveTimeout;
+
     @Bean
     public ServletWebServerFactory servletContainer() {
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
         TomcatConnectionCustomizer tomcatConnectionCustomizer = new TomcatConnectionCustomizer();
         tomcat.addConnectorCustomizers(tomcatConnectionCustomizer);
-        if(!contextPath.isEmpty() && !"/".equals(contextPath)){
+        if (!contextPath.isEmpty() && !"/".equals(contextPath)) {
             tomcat.setContextPath(contextPath);
         }
 
@@ -133,6 +136,7 @@ public class TomcatConfiguration {
             connector.setAttribute("redirectPort", redirectPort);
             connector.setAttribute("compression", compression);
             connector.setAttribute("compressionMinSize", compressionMinSize);
+            connector.setAttribute("keepAliveTimeout", keepAliveTimeout);
         }
     }
 

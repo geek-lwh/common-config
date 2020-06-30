@@ -56,11 +56,11 @@ public class HttpClientConfiguration {
     private int maxTotalConnections;
 
     // keep alive保持长连接不断开的时间
-    @Value("${common.http.keep.alive.timeout:15000}")
+    @Value("${common.http.keep.alive.timeout:30000}")
     private int keepaliveTimeout;
 
     // 关闭空闲http资源的时间
-    @Value("${common.http.close.idle.connection.wait.timeout:30}")
+    @Value("${common.http.close.idle.connection.wait.timeout:10}")
     private int closeIdleConnectionWaitTimeout;
 
     /**
