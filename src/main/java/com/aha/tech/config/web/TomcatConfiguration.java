@@ -72,7 +72,7 @@ public class TomcatConfiguration {
     private String compressionMinSize;
 
     // 链接超时时间
-    @Value("${common.server.tomcat.connectionTimeout:10000}")
+    @Value("${common.server.tomcat.connectionTimeout:5000}")
     private String connectionTimeout;
 
     // 上传附件大小
@@ -83,7 +83,7 @@ public class TomcatConfiguration {
     @Value("${common.server.tomcat.maxRequestSize:10MB}")
     private String maxRequestSize;
 
-    @Value("${common.server.tomcat.keepAliveTimeout:10000}")
+    @Value("${common.server.tomcat.keepAliveTimeout:5000}")
     private String keepAliveTimeout;
 
     @Bean
