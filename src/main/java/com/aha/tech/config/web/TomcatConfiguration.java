@@ -83,7 +83,7 @@ public class TomcatConfiguration {
     @Value("${common.server.tomcat.maxRequestSize:10MB}")
     private String maxRequestSize;
 
-    @Value("${common.server.tomcat.keepAliveTimeout:30000}")
+    @Value("${common.server.tomcat.keepAliveTimeout:10000}")
     private String keepAliveTimeout;
 
     @Bean
