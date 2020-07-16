@@ -49,9 +49,9 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         if (attributes == null) {
             return;
         }
-
+        int port = attributes.getRequest().getServerPort();
         overwriteXenv(requestTemplate);
-        buildTrace(requestTemplate);
+        buildTrace(requestTemplate, port);
         feignRequestLogging(requestTemplate);
     }
 
@@ -81,23 +81,20 @@ public class FeignRequestInterceptor implements RequestInterceptor {
      * 构建调用链路
      * @param requestTemplate
      */
-    private void buildTrace(RequestTemplate requestTemplate) {
+    private void buildTrace(RequestTemplate requestTemplate, int port) {
         CatContext catContext = CatContextThreadLocal.get();
         if (catContext == null) {
             return;
         }
         Cat.logRemoteCallClient(catContext, Cat.getManager().getDomain());
-        String rootId = catContext.getProperty(Cat.Context.ROOT);
-        String parentId = catContext.getProperty(Cat.Context.PARENT);
-        String childId = catContext.getProperty(Cat.Context.CHILD);
-
-        requestTemplate.header(CatConstant.PROVIDER_CALL_APP, Cat.getManager().getDomain());
-        requestTemplate.header(CatConstant.CAT_HTTP_HEADER_ROOT_MESSAGE_ID, rootId);
-        requestTemplate.header(CatConstant.CAT_HTTP_HEADER_PARENT_MESSAGE_ID, parentId);
-        requestTemplate.header(CatConstant.CAT_HTTP_HEADER_CHILD_MESSAGE_ID, childId);
+        requestTemplate.header(CatConstant.CAT_HTTP_HEADER_ROOT_MESSAGE_ID, catContext.getProperty(Cat.Context.ROOT));
+        requestTemplate.header(CatConstant.CAT_HTTP_HEADER_PARENT_MESSAGE_ID, catContext.getProperty(Cat.Context.PARENT));
+        requestTemplate.header(CatConstant.CAT_HTTP_HEADER_CHILD_MESSAGE_ID, catContext.getProperty(Cat.Context.CHILD));
         requestTemplate.header(HeaderConstant.CONSUMER_SERVER_NAME, Cat.getManager().getDomain());
+        requestTemplate.header(HeaderConstant.CONSUMER_SERVER_PORT, String.valueOf(port));
+
         try {
-            requestTemplate.header(HeaderConstant.CONSUMER_SERVER_IP, IpUtil.getLocalHostAddress());
+            requestTemplate.header(HeaderConstant.CONSUMER_SERVER_HOST, IpUtil.getLocalHostAddress());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -140,14 +137,15 @@ public class FeignRequestInterceptor implements RequestInterceptor {
             String contentType = requestTemplate.method().equals(HttpMethod.POST.name()) ? MediaType.APPLICATION_JSON_UTF8_VALUE : MediaType.TEXT_PLAIN_VALUE;
             requestTemplate.header(CONTENT_TYPE, contentType);
         }
+
         List<String> acceptableMediaTypes = Lists.newArrayList(MediaType.ALL_VALUE);
-        requestTemplate.header(ACCEPT, acceptableMediaTypes);
-        requestTemplate.header(CONNECTION, HTTP_HEADER_CONNECTION_VALUE);
-        requestTemplate.header(HTTP_HEADER_KEEP_ALIVE_KEY, HTTP_HEADER_KEEP_ALIVE_VALUE);
-        requestTemplate.header(HTTP_HEADER_X_REQUESTED_WITH_KEY, HTTP_HEADER_X_REQUESTED_WITH_VALUE);
-        requestTemplate.header(CONTENT_ENCODING, CHARSET_ENCODING);
-        requestTemplate.header(X_TOKEN_KEY, X_TOKEN);
-        requestTemplate.header(TRACE_ID, MDCUtil.getTraceId());
+        requestTemplate.header(HeaderConstant.ACCEPT, acceptableMediaTypes);
+        requestTemplate.header(HeaderConstant.CONNECTION, HTTP_HEADER_CONNECTION_VALUE);
+        requestTemplate.header(HeaderConstant.HTTP_HEADER_KEEP_ALIVE_KEY, HTTP_HEADER_KEEP_ALIVE_VALUE);
+        requestTemplate.header(HeaderConstant.HTTP_HEADER_X_REQUESTED_WITH_KEY, HTTP_HEADER_X_REQUESTED_WITH_VALUE);
+        requestTemplate.header(HeaderConstant.CONTENT_ENCODING, CHARSET_ENCODING);
+        requestTemplate.header(HeaderConstant.X_TOKEN_KEY, X_TOKEN);
+        requestTemplate.header(HeaderConstant.TRACE_ID, MDCUtil.getTraceId());
     }
 
     /**
@@ -163,4 +161,5 @@ public class FeignRequestInterceptor implements RequestInterceptor {
 
         logger.info("Feign request INFO : {}", sb);
     }
+
 }

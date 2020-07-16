@@ -16,25 +16,30 @@ public class CatConstant extends CatConstants {
     public static final String CROSS_SERVER = "PigeonService";
 
 
+    // 调用方
     public static final String CONSUMER_CALL_SERVER = "PigeonCall.server";
 
+    // 调用方
     public static final String CONSUMER_CALL_APP = "PigeonCall.app";
 
+    // 调用方
     public static final String CONSUMER_CALL_PORT = "PigeonCall.port";
-
 
 
     public static final String PROVIDER_APPLICATION_NAME = "serverApplicationName";
 
     public static final String PROVIDER_APPLICATION_IP = "serverApplicationIp";
 
-    /**
-     * 客户端调用标识
-     */
+
+    // 接收方
     public static final String PROVIDER_CALL_APP = "PigeonService.app";
+
+    // 接收方
+    public static final String PROVIDER_CALL_SERVER = "PigeonService.client";
 
     public static final String PROVIDER_TRACE_ID = "PigeonService.tId";
 
+    // 接收方
     public static final String PROVIDER_CALL_IP = "PigeonService.ip";
 
     public static final String FORK_MESSAGE_ID = "m_forkedMessageId";

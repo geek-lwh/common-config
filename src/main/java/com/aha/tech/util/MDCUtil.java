@@ -41,7 +41,6 @@ public class MDCUtil {
     public static String initTraceId(HttpServletRequest request) {
         String tId = request.getHeader(HeaderConstant.TRACE_ID);
         if (StringUtils.isBlank(tId)) {
-
             tId = Cat.createMessageId();
         }
 

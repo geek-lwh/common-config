@@ -5,8 +5,9 @@ import com.aha.tech.constant.HeaderConstant;
 import com.aha.tech.constant.OrderedConstant;
 import com.aha.tech.filter.cat.CatContext;
 import com.aha.tech.threadlocal.CatContextThreadLocal;
-import com.aha.tech.util.MDCUtil;
+import com.aha.tech.util.IpUtil;
 import com.dianping.cat.Cat;
+import com.dianping.cat.message.Event;
 import com.dianping.cat.message.Transaction;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -35,14 +36,23 @@ public class CatContextServletFilter implements Filter {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
-        CatContext catContext = initCatContext(request);
-
         Transaction t = Cat.newTransaction(CatConstant.CROSS_SERVER, request.getRequestURI());
         try {
-            Cat.logEvent(CatConstant.PROVIDER_CALL_APP, catContext.getProperty(CatConstant.PROVIDER_APPLICATION_NAME));
-            Cat.logEvent(CatConstant.PROVIDER_CALL_IP, catContext.getProperty(CatConstant.PROVIDER_APPLICATION_IP));
-            Cat.logEvent(CatConstant.PROVIDER_TRACE_ID, MDCUtil.getTraceId());
-
+            CatContext catContext = new CatContext();
+            if (null == request.getHeader(CatConstant.CAT_HTTP_HEADER_ROOT_MESSAGE_ID)) {
+                int port = request.getServerPort();
+                createRpcClientCross(t, port);
+                Cat.logRemoteCallClient(catContext, Cat.getManager().getDomain());
+            } else {
+                String consumerServerName = request.getHeader(HeaderConstant.CONSUMER_SERVER_NAME);
+                String consumerServerHost = request.getHeader(HeaderConstant.CONSUMER_SERVER_HOST);
+                createRpcServerCross(consumerServerName, consumerServerHost, t);
+                catContext.addProperty(Cat.Context.ROOT, request.getHeader(CatConstant.CAT_HTTP_HEADER_ROOT_MESSAGE_ID));
+                catContext.addProperty(Cat.Context.PARENT, request.getHeader(CatConstant.CAT_HTTP_HEADER_PARENT_MESSAGE_ID));
+                catContext.addProperty(Cat.Context.CHILD, request.getHeader(CatConstant.CAT_HTTP_HEADER_CHILD_MESSAGE_ID));
+                Cat.logRemoteCallServer(catContext);
+            }
+            CatContextThreadLocal.set(catContext);
             filterChain.doFilter(servletRequest, servletResponse);
             t.setStatus(Transaction.SUCCESS);
         } catch (Exception ex) {
@@ -54,43 +64,52 @@ public class CatContextServletFilter implements Filter {
         }
     }
 
-    @Override
-    public void destroy() {
-
+    /**
+     * 创建RpcClient端链路
+     * @param transaction
+     * @param port
+     */
+    private void createRpcClientCross(Transaction transaction, int port) throws Exception {
+        Event crossAppEvent = Cat.newEvent(CatConstant.CONSUMER_CALL_APP, Cat.getManager().getDomain());
+        Event crossServerEvent = Cat.newEvent(CatConstant.CONSUMER_CALL_SERVER, IpUtil.getLocalHostAddress());
+        Event crossPortEvent = Cat.newEvent(CatConstant.CONSUMER_CALL_PORT, String.valueOf(port));
+        crossAppEvent.setStatus(Event.SUCCESS);
+        crossServerEvent.setStatus(Event.SUCCESS);
+        crossPortEvent.setStatus(Event.SUCCESS);
+        completeEvent(crossAppEvent);
+        completeEvent(crossPortEvent);
+        completeEvent(crossServerEvent);
+        transaction.addChild(crossAppEvent);
+        transaction.addChild(crossPortEvent);
+        transaction.addChild(crossServerEvent);
     }
 
     /**
-     * 初始化cat上下文
-     * @param request
-     * @return
+     * 创建rpcServer端链路
+     * @param consumerServerName
+     * @param transaction
      */
-    private CatContext initCatContext(HttpServletRequest request) {
-        CatContext catContext = new CatContext();
-        catContext.addProperty(Cat.Context.ROOT, request.getHeader(CatConstant.CAT_HTTP_HEADER_ROOT_MESSAGE_ID));
-        catContext.addProperty(Cat.Context.PARENT, request.getHeader(CatConstant.CAT_HTTP_HEADER_PARENT_MESSAGE_ID));
-        catContext.addProperty(Cat.Context.CHILD, request.getHeader(CatConstant.CAT_HTTP_HEADER_CHILD_MESSAGE_ID));
+    private void createRpcServerCross(String consumerServerName, String host, Transaction transaction) {
+        Event crossAppEvent = Cat.newEvent(CatConstant.PROVIDER_CALL_APP, StringUtils.isBlank(consumerServerName) ? "UNKNOWN" : consumerServerName);
+        Event crossServerEvent = Cat.newEvent(CatConstant.PROVIDER_CALL_SERVER, host);
+        crossAppEvent.setStatus(Event.SUCCESS);
+        crossServerEvent.setStatus(Event.SUCCESS);
+        completeEvent(crossAppEvent);
+        completeEvent(crossServerEvent);
+        transaction.addChild(crossAppEvent);
+        transaction.addChild(crossServerEvent);
+    }
 
-        String callServerName = request.getHeader(HeaderConstant.CONSUMER_SERVER_NAME);
-        if (StringUtils.isBlank(callServerName)) {
-            callServerName = request.getRemoteHost();
-        }
-        catContext.addProperty(CatConstant.PROVIDER_APPLICATION_NAME, callServerName);
+    /**
+     * event complete
+     * @param event
+     */
+    private void completeEvent(Event event) {
+        event.complete();
+    }
 
-        String callServerIp = request.getHeader(HeaderConstant.CONSUMER_SERVER_IP);
-        if (StringUtils.isBlank(callServerIp)) {
-            callServerIp = request.getRemoteAddr();
-        }
-        catContext.addProperty(CatConstant.PROVIDER_APPLICATION_IP, callServerIp);
+    @Override
+    public void destroy() {
 
-        if (catContext.getProperty(Cat.Context.ROOT) == null) {
-            // 当前项目的app.id
-            Cat.logRemoteCallClient(catContext, Cat.getManager().getDomain());
-        } else {
-            Cat.logRemoteCallServer(catContext);
-        }
-
-        CatContextThreadLocal.set(catContext);
-
-        return catContext;
     }
 }
