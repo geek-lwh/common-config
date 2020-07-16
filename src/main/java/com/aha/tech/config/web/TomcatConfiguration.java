@@ -137,6 +137,8 @@ public class TomcatConfiguration {
             connector.setAttribute("compression", compression);
             connector.setAttribute("compressionMinSize", compressionMinSize);
             connector.setAttribute("keepAliveTimeout", keepAliveTimeout);
+            long maxKeepAliveRequests = Math.round(Integer.parseInt(maxThreads) * 0.75);
+            connector.setAttribute("maxKeepAliveRequests", String.valueOf(maxKeepAliveRequests));
         }
     }
 

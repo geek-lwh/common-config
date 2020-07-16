@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -68,6 +69,18 @@ public class WebConfiguration implements WebMvcConfigurer {
         registry.addInterceptor(new EnvInterceptor())
                 .addPathPatterns("/**").excludePathPatterns(excludePathPatterns);
 
+    }
+
+    /**
+     * 跨域
+     * @param registry
+     */
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**").
+                allowedOrigins("*"). //允许跨域的域名，可以用*表示允许任何域名使用
+                allowedMethods("POST", "PUT", "GET", "DELETE"). //允许任何方法（post、get等）
+                allowedHeaders("*"). //允许任何请求头
+                maxAge(3600L); //maxAge
     }
 
 }

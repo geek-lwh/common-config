@@ -30,7 +30,7 @@ public class HeaderConstant {
 
     public static final String HTTP_HEADER_KEEP_ALIVE_KEY = "Keep-Alive";
 
-    public static final String HTTP_HEADER_KEEP_ALIVE_VALUE = "timeout=60";
+    public static final String HTTP_HEADER_KEEP_ALIVE_VALUE = "5000";
 
     public static final String CONTENT_ENCODING = "Content-Encoding";
 
