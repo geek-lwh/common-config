@@ -36,10 +36,12 @@ public class CatContextServletFilter implements Filter {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
-        Transaction t = Cat.newTransaction(CatConstant.CROSS_SERVER, request.getRequestURI());
+        String invokeSource = request.getHeader(CatConstant.CAT_HTTP_HEADER_ROOT_MESSAGE_ID);
+        String type = StringUtils.isBlank(invokeSource) ? CatConstant.CROSS_CONSUMER : CatConstant.CROSS_SERVER;
+        Transaction t = Cat.newTransaction(type, request.getRequestURI());
         try {
             CatContext catContext = new CatContext();
-            if (null == request.getHeader(CatConstant.CAT_HTTP_HEADER_ROOT_MESSAGE_ID)) {
+            if (StringUtils.isBlank(invokeSource)) {
                 int port = request.getServerPort();
                 createRpcClientCross(t, port);
                 Cat.logRemoteCallClient(catContext, Cat.getManager().getDomain());
