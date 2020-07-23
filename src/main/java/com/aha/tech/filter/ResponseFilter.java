@@ -13,6 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static com.aha.tech.constant.HeaderConstant.*;
+
 /**
  * 说明:过滤打印输入输出参数Log
  *
@@ -26,30 +28,15 @@ public class ResponseFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     final FilterChain filterChain) throws ServletException, IOException {
-//        // 表明，该资源可以被任意外域访问 Access-Control-Allow-Origin: http://foo.example
-//        response.setHeader("Access-Control-Allow-Origin", "*");
-//
-//        // 表明服务器允许客户端使用 POST,PUT,GET,DELETE 发起请求
-//        response.setHeader("Access-Control-Allow-Methods", "POST,PUT,GET,DELETE");
-//
-//        // 表明该响应的有效时间为 10 秒
-//            response.setHeader("Access-Control-Max-Age", "10");
-//
-//        // 表明服务器允许请求中携带字段 X-PINGOTHER 与 Content-Type x-requested-with
-//        response.setHeader("Access-Control-Allow-Headers", "x-requested-with,Content-Type");
-
-        String connection = request.getHeader("Connection");
-        if (StringUtils.isBlank(connection)) {
-            return;
-        }
-
-        if (connection.equals("close")) {
-            return;
-        }
-
-        String keepAlive = request.getHeader("Keep-Alive");
-        if (StringUtils.isNotBlank(keepAlive)) {
-            response.setHeader("Keep-Alive", String.format("timeout=%s, max=50", keepAlive));
+        String connection = request.getHeader(CONNECTION);
+        if (StringUtils.isNotBlank(connection) && connection.toLowerCase().equals(HTTP_HEADER_CONNECTION_VALUE)) {
+            String keepAlive = request.getHeader(HTTP_HEADER_KEEP_ALIVE_KEY);
+            if (StringUtils.isNotBlank(keepAlive)) {
+                response.setHeader(HTTP_HEADER_KEEP_ALIVE_KEY, String.format("timeout=%s, max=50", keepAlive));
+            }
+//            else{
+//                response.setHeader(HTTP_HEADER_KEEP_ALIVE_KEY, String.format("timeout=5, max=50", keepAlive));
+//            }
         }
 
         filterChain.doFilter(request, response);

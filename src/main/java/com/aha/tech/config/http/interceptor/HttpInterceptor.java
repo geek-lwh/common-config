@@ -40,7 +40,7 @@ public class HttpInterceptor implements ClientHttpRequestInterceptor {
 
     private final static String HTTP_HEADER_KEEP_ALIVE_KEY = "Keep-Alive";
 
-    private final static String HTTP_HEADER_KEEP_ALIVE_VALUE = "timeout=60";
+    private final static String HTTP_HEADER_KEEP_ALIVE_VALUE = "5000";
 
     @Override
     public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {

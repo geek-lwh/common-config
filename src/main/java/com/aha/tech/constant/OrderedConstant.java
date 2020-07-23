@@ -8,13 +8,12 @@ import org.springframework.core.Ordered;
  */
 public class OrderedConstant {
 
-    public static final int RESPONSE_FILTER = Ordered.LOWEST_PRECEDENCE + 1;
-
-    public static final int TRACE_FILTER_ORDERED = RESPONSE_FILTER + 1;
+    public static final int TRACE_FILTER_ORDERED = Ordered.LOWEST_PRECEDENCE + 1;
 
     public static final int REQUEST_RESPONSE_FILTER_ORDERED = TRACE_FILTER_ORDERED + 1;
 
     public static final int CAT_CONTEXT_FILTER_ORDERED = REQUEST_RESPONSE_FILTER_ORDERED + 1;
 
+    public static final int RESPONSE_FILTER = CAT_CONTEXT_FILTER_ORDERED + 1;
 
 }
