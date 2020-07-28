@@ -5,7 +5,6 @@ import com.aha.tech.constant.HeaderConstant;
 import com.aha.tech.constant.OrderedConstant;
 import com.aha.tech.filter.cat.CatContext;
 import com.aha.tech.threadlocal.CatContextThreadLocal;
-import com.aha.tech.util.IpUtil;
 import com.dianping.cat.Cat;
 import com.dianping.cat.message.Event;
 import com.dianping.cat.message.Transaction;
@@ -36,14 +35,11 @@ public class CatContextServletFilter implements Filter {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
-        String invokeSource = request.getHeader(CatConstant.CAT_HTTP_HEADER_ROOT_MESSAGE_ID);
-        String type = StringUtils.isBlank(invokeSource) ? CatConstant.CROSS_CONSUMER : CatConstant.CROSS_SERVER;
-        Transaction t = Cat.newTransaction(type, request.getRequestURI());
+        String hasRoot = request.getHeader(CatConstant.CAT_HTTP_HEADER_ROOT_MESSAGE_ID);
+        Transaction t = Cat.newTransaction(CatConstant.CROSS_SERVER, request.getRequestURI());
         try {
             CatContext catContext = new CatContext();
-            if (StringUtils.isBlank(invokeSource)) {
-                int port = request.getServerPort();
-                createRpcClientCross(t, port);
+            if (StringUtils.isBlank(hasRoot)) {
                 Cat.logRemoteCallClient(catContext, Cat.getManager().getDomain());
             } else {
                 String consumerServerName = request.getHeader(HeaderConstant.CONSUMER_SERVER_NAME);
@@ -67,33 +63,13 @@ public class CatContextServletFilter implements Filter {
     }
 
     /**
-     * 创建RpcClient端链路
-     * @param transaction
-     * @param port
-     */
-    private void createRpcClientCross(Transaction transaction, int port) throws Exception {
-        Event crossAppEvent = Cat.newEvent(CatConstant.CONSUMER_CALL_APP, Cat.getManager().getDomain());
-        Event crossServerEvent = Cat.newEvent(CatConstant.CONSUMER_CALL_SERVER, IpUtil.getLocalHostAddress());
-        Event crossPortEvent = Cat.newEvent(CatConstant.CONSUMER_CALL_PORT, String.valueOf(port));
-        crossAppEvent.setStatus(Event.SUCCESS);
-        crossServerEvent.setStatus(Event.SUCCESS);
-        crossPortEvent.setStatus(Event.SUCCESS);
-        completeEvent(crossAppEvent);
-        completeEvent(crossPortEvent);
-        completeEvent(crossServerEvent);
-        transaction.addChild(crossAppEvent);
-        transaction.addChild(crossPortEvent);
-        transaction.addChild(crossServerEvent);
-    }
-
-    /**
      * 创建rpcServer端链路
      * @param consumerServerName
      * @param transaction
      */
-    private void createRpcServerCross(String consumerServerName, String host, Transaction transaction) {
-        Event crossAppEvent = Cat.newEvent(CatConstant.PROVIDER_CALL_APP, StringUtils.isBlank(consumerServerName) ? "UNKNOWN" : consumerServerName);
-        Event crossServerEvent = Cat.newEvent(CatConstant.PROVIDER_CALL_SERVER, host);
+    private void createRpcServerCross(String consumerServerName, String consumerServerHost, Transaction transaction) {
+        Event crossAppEvent = Cat.newEvent(CatConstant.PROVIDER_CALL_APP, StringUtils.isBlank(consumerServerName) ? CatConstant.UNKNOWN_SERVER : consumerServerName);
+        Event crossServerEvent = Cat.newEvent(CatConstant.PROVIDER_CALL_SERVER, consumerServerHost);
         crossAppEvent.setStatus(Event.SUCCESS);
         crossServerEvent.setStatus(Event.SUCCESS);
         completeEvent(crossAppEvent);

@@ -10,6 +10,8 @@ import com.aha.tech.threadlocal.XEnvThreadLocal;
 import com.aha.tech.util.IpUtil;
 import com.aha.tech.util.MDCUtil;
 import com.dianping.cat.Cat;
+import com.dianping.cat.message.Event;
+import com.dianping.cat.message.Transaction;
 import com.google.common.collect.Lists;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
@@ -49,10 +51,21 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         if (attributes == null) {
             return;
         }
-        int port = attributes.getRequest().getServerPort();
-        overwriteXenv(requestTemplate);
-        buildTrace(requestTemplate, port);
-        feignRequestLogging(requestTemplate);
+
+        Transaction t = Cat.newTransaction(CatConstant.CROSS_CONSUMER, requestTemplate.url());
+        try {
+            int port = attributes.getRequest().getServerPort();
+            overwriteXenv(requestTemplate);
+            createRpcClient(requestTemplate, port, t);
+            feignRequestLogging(requestTemplate);
+            t.setStatus(Transaction.SUCCESS);
+        } catch (Exception e) {
+            logger.error("初始化rpcClient异常", e);
+            t.setStatus(e);
+            Cat.logError(e);
+        } finally {
+            t.complete();
+        }
     }
 
     private void overwriteXenv(RequestTemplate requestTemplate) {
@@ -63,41 +76,25 @@ public class FeignRequestInterceptor implements RequestInterceptor {
     }
 
     /**
-     * 复制原始请求头
-     * @param attributes
-     * @param requestTemplate
-     */
-    private void copyOriginalRequestHeader(ServletRequestAttributes attributes, RequestTemplate requestTemplate) {
-        HttpServletRequest request = attributes.getRequest();
-        Enumeration<String> headerNames = request.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String k = headerNames.nextElement();
-            String v = request.getHeader(k);
-            requestTemplate.header("Original_" + k, v);
-        }
-    }
-
-    /**
      * 构建调用链路
      * @param requestTemplate
      */
-    private void buildTrace(RequestTemplate requestTemplate, int port) {
+    private void createRpcClient(RequestTemplate requestTemplate, int port, Transaction t) throws Exception {
         CatContext catContext = CatContextThreadLocal.get();
         if (catContext == null) {
             return;
         }
+
+
+        createRpcClientCross(t, port);
         Cat.logRemoteCallClient(catContext, Cat.getManager().getDomain());
         requestTemplate.header(CatConstant.CAT_HTTP_HEADER_ROOT_MESSAGE_ID, catContext.getProperty(Cat.Context.ROOT));
         requestTemplate.header(CatConstant.CAT_HTTP_HEADER_PARENT_MESSAGE_ID, catContext.getProperty(Cat.Context.PARENT));
         requestTemplate.header(CatConstant.CAT_HTTP_HEADER_CHILD_MESSAGE_ID, catContext.getProperty(Cat.Context.CHILD));
         requestTemplate.header(HeaderConstant.CONSUMER_SERVER_NAME, Cat.getManager().getDomain());
-        requestTemplate.header(HeaderConstant.CONSUMER_SERVER_PORT, String.valueOf(port));
-
-        try {
-            requestTemplate.header(HeaderConstant.CONSUMER_SERVER_HOST, IpUtil.getLocalHostAddress());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        requestTemplate.header(HeaderConstant.CONSUMER_SERVER_PORT, String.valueOf(port));
+        String localAddress = IpUtil.getLocalHostAddress();
+        requestTemplate.header(HeaderConstant.CONSUMER_SERVER_HOST, localAddress + ":" + port);
     }
 
     /**
@@ -160,6 +157,50 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         sb.append("Feign request BODY : ").append(body);
 
         logger.info("Feign request INFO : {}", sb);
+    }
+
+    /**
+     * 创建RpcClient端链路
+     * @param transaction
+     * @param port
+     */
+    private void createRpcClientCross(Transaction transaction, int port) throws Exception {
+        Event crossAppEvent = Cat.newEvent(CatConstant.CONSUMER_CALL_APP, Cat.getManager().getDomain());
+        Event crossServerEvent = Cat.newEvent(CatConstant.CONSUMER_CALL_SERVER, IpUtil.getLocalHostAddress());
+        Event crossPortEvent = Cat.newEvent(CatConstant.CONSUMER_CALL_PORT, String.valueOf(port));
+        crossAppEvent.setStatus(Event.SUCCESS);
+        crossServerEvent.setStatus(Event.SUCCESS);
+        crossPortEvent.setStatus(Event.SUCCESS);
+        completeEvent(crossAppEvent);
+        completeEvent(crossPortEvent);
+        completeEvent(crossServerEvent);
+        transaction.addChild(crossAppEvent);
+        transaction.addChild(crossPortEvent);
+        transaction.addChild(crossServerEvent);
+    }
+
+    /**
+     * event complete
+     * @param event
+     */
+    private void completeEvent(Event event) {
+        event.complete();
+    }
+
+    /**
+     * 复制原始请求头
+     * @param attributes
+     * @param requestTemplate
+     */
+    @Deprecated
+    private void copyOriginalRequestHeader(ServletRequestAttributes attributes, RequestTemplate requestTemplate) {
+        HttpServletRequest request = attributes.getRequest();
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String k = headerNames.nextElement();
+            String v = request.getHeader(k);
+            requestTemplate.header("Original_" + k, v);
+        }
     }
 
 }
