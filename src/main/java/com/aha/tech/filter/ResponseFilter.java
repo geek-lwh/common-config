@@ -22,7 +22,7 @@ import static com.aha.tech.constant.HeaderConstant.*;
  */
 @Component
 @Order(OrderedConstant.RESPONSE_FILTER)
-@WebFilter(filterName = "CrossDomainRequestFilter", urlPatterns = "/*")
+@WebFilter(filterName = "ResponseFilter", urlPatterns = "/*")
 public class ResponseFilter extends OncePerRequestFilter {
 
     @Override
@@ -31,10 +31,10 @@ public class ResponseFilter extends OncePerRequestFilter {
         String connection = request.getHeader(CONNECTION);
         if (StringUtils.isNotBlank(connection) && connection.toLowerCase().equals(HTTP_HEADER_CONNECTION_VALUE)) {
             String keepAlive = request.getHeader(HTTP_HEADER_KEEP_ALIVE_KEY);
-            if (StringUtils.isNotBlank(keepAlive)) {
+            if (StringUtils.isNotBlank(keepAlive) && Long.valueOf(keepAlive) >= 1000l) {
                 response.setHeader(HTTP_HEADER_KEEP_ALIVE_KEY, String.format("timeout=%s, max=50", keepAlive));
             } else {
-                response.setHeader(HTTP_HEADER_KEEP_ALIVE_KEY, String.format("timeout=5, max=50"));
+                response.setHeader(HTTP_HEADER_KEEP_ALIVE_KEY, String.format("timeout=5000, max=50"));
             }
         }
 

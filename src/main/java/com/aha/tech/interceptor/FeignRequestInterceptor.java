@@ -51,15 +51,15 @@ public class FeignRequestInterceptor implements RequestInterceptor {
     public void apply(RequestTemplate requestTemplate) {
         initRequestHeader(requestTemplate);
         overwriteXEnv(requestTemplate);
-        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        if (attributes == null) {
-            return;
-        }
 
         Boolean catEnable = config.getBooleanProperty("use.common.cat", Boolean.FALSE);
         if (catEnable) {
             try {
-                int port = attributes.getRequest().getServerPort();
+                int port = config.getIntProperty("common.server.tomcat.port", 0);
+                ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+                if (attributes != null) {
+                    port = attributes.getRequest().getServerPort();
+                }
                 createRpcClient(requestTemplate, port);
             } catch (Exception e) {
                 logger.warn("创建rpcClient链路失败", e);
