@@ -43,20 +43,25 @@ public class RequestResponseLogFilter extends OncePerRequestFilter {
         RequestWrapper requestWrapper = new RequestWrapper(request);
         ResponseWrapper responseWrapper = new ResponseWrapper(response);
 
-        StringBuilder requestLog = new StringBuilder(System.lineSeparator());
-        Enumeration<String> headers = requestWrapper.getHeaderNames();
+        StringBuilder requestLog = new StringBuilder();
 
-        requestLog.append("uri : ").append(uri).append(System.lineSeparator());
-        requestLog.append("header : ").append(System.lineSeparator());
+        requestLog.append(System.lineSeparator());
+        requestLog.append("uri = ").append(uri);
+        requestLog.append(System.lineSeparator());
+
+        requestLog.append(System.lineSeparator());
+        Enumeration<String> headers = requestWrapper.getHeaderNames();
+        requestLog.append("header = ").append(System.lineSeparator());
         while (headers.hasMoreElements()) {
             String k = headers.nextElement();
             String v = requestWrapper.getHeader(k);
-            requestLog.append(k).append("=").append(v).append(System.lineSeparator());
+            requestLog.append(k).append(":").append(v).append(System.lineSeparator());
         }
+        requestLog.append(System.lineSeparator());
 
-        requestLog.append("body : ").append(System.lineSeparator());
-
-        requestLog.append(requestWrapper.getBody());
+        requestLog.append(System.lineSeparator());
+        requestLog.append("body = ").append(requestWrapper.getBody());
+        requestLog.append(System.lineSeparator());
 
         logger.info("{}", requestLog);
 
@@ -73,8 +78,8 @@ public class RequestResponseLogFilter extends OncePerRequestFilter {
         outputStream.close();
         // 打印response
         StringBuilder responseLog = new StringBuilder(System.lineSeparator());
-        responseLog.append("response status : ").append(responseWrapper.getStatus()).append(System.lineSeparator());
-        responseLog.append("response body : ").append(System.lineSeparator());
+        responseLog.append("response status = ").append(responseWrapper.getStatus()).append(System.lineSeparator());
+        responseLog.append("response body = ").append(System.lineSeparator());
         responseLog.append(result);
 
         logger.info("{}", responseLog);

@@ -117,12 +117,12 @@ public class HttpClientConfiguration {
                 String value = he.getValue();
 
                 if (value != null && param.equalsIgnoreCase("timeout")) {
-                    long responseTimeout = Long.parseLong(value) * 1000;
+                    long responseTimeout = Long.parseLong(value);
                     return responseTimeout;
                 }
             }
 
-            return keepaliveTimeout;
+            return -1;
         };
     }
 

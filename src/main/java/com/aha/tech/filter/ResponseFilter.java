@@ -33,10 +33,9 @@ public class ResponseFilter extends OncePerRequestFilter {
             String keepAlive = request.getHeader(HTTP_HEADER_KEEP_ALIVE_KEY);
             if (StringUtils.isNotBlank(keepAlive)) {
                 response.setHeader(HTTP_HEADER_KEEP_ALIVE_KEY, String.format("timeout=%s, max=50", keepAlive));
+            } else {
+                response.setHeader(HTTP_HEADER_KEEP_ALIVE_KEY, String.format("timeout=5, max=50"));
             }
-//            else{
-//                response.setHeader(HTTP_HEADER_KEEP_ALIVE_KEY, String.format("timeout=5, max=50", keepAlive));
-//            }
         }
 
         filterChain.doFilter(request, response);

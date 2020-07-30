@@ -9,9 +9,10 @@ import com.aha.tech.threadlocal.CatContextThreadLocal;
 import com.aha.tech.threadlocal.XEnvThreadLocal;
 import com.aha.tech.util.IpUtil;
 import com.aha.tech.util.MDCUtil;
+import com.ctrip.framework.apollo.Config;
+import com.ctrip.framework.apollo.ConfigService;
 import com.dianping.cat.Cat;
 import com.dianping.cat.message.Event;
-import com.dianping.cat.message.Transaction;
 import com.google.common.collect.Lists;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
@@ -44,31 +45,35 @@ public class FeignRequestInterceptor implements RequestInterceptor {
 
     private final Logger logger = LoggerFactory.getLogger(FeignRequestInterceptor.class);
 
+    private static Config config = ConfigService.getAppConfig();
+
     @Override
     public void apply(RequestTemplate requestTemplate) {
         initRequestHeader(requestTemplate);
+        overwriteXEnv(requestTemplate);
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (attributes == null) {
             return;
         }
 
-        Transaction t = Cat.newTransaction(CatConstant.CROSS_CONSUMER, requestTemplate.url());
-        try {
+        Boolean catEnable = config.getBooleanProperty("use.common.cat", Boolean.FALSE);
+        if (catEnable) {
             int port = attributes.getRequest().getServerPort();
-            overwriteXenv(requestTemplate);
-            createRpcClient(requestTemplate, port, t);
-            feignRequestLogging(requestTemplate);
-            t.setStatus(Transaction.SUCCESS);
-        } catch (Exception e) {
-            logger.error("初始化rpcClient异常", e);
-            t.setStatus(e);
-            Cat.logError(e);
-        } finally {
-            t.complete();
+            try {
+                createRpcClient(requestTemplate, port);
+            } catch (Exception e) {
+                logger.warn("创建rpcClient链路失败", e);
+            }
         }
+
+        feignRequestLogging(requestTemplate);
     }
 
-    private void overwriteXenv(RequestTemplate requestTemplate) {
+    /**
+     * 覆盖XEnv的值
+     * @param requestTemplate
+     */
+    private void overwriteXEnv(RequestTemplate requestTemplate) {
         XEnvDto xEnvDto = XEnvThreadLocal.get();
         if (xEnvDto != null) {
             initHeaderFromEnv(xEnvDto, requestTemplate);
@@ -79,20 +84,18 @@ public class FeignRequestInterceptor implements RequestInterceptor {
      * 构建调用链路
      * @param requestTemplate
      */
-    private void createRpcClient(RequestTemplate requestTemplate, int port, Transaction t) throws Exception {
+    private void createRpcClient(RequestTemplate requestTemplate, int port) throws Exception {
         CatContext catContext = CatContextThreadLocal.get();
         if (catContext == null) {
             return;
         }
 
-
-        createRpcClientCross(t, port);
+        createRpcClientCross(port);
         Cat.logRemoteCallClient(catContext, Cat.getManager().getDomain());
         requestTemplate.header(CatConstant.CAT_HTTP_HEADER_ROOT_MESSAGE_ID, catContext.getProperty(Cat.Context.ROOT));
         requestTemplate.header(CatConstant.CAT_HTTP_HEADER_PARENT_MESSAGE_ID, catContext.getProperty(Cat.Context.PARENT));
         requestTemplate.header(CatConstant.CAT_HTTP_HEADER_CHILD_MESSAGE_ID, catContext.getProperty(Cat.Context.CHILD));
         requestTemplate.header(HeaderConstant.CONSUMER_SERVER_NAME, Cat.getManager().getDomain());
-//        requestTemplate.header(HeaderConstant.CONSUMER_SERVER_PORT, String.valueOf(port));
         String localAddress = IpUtil.getLocalHostAddress();
         requestTemplate.header(HeaderConstant.CONSUMER_SERVER_HOST, localAddress + ":" + port);
     }
@@ -161,22 +164,12 @@ public class FeignRequestInterceptor implements RequestInterceptor {
 
     /**
      * 创建RpcClient端链路
-     * @param transaction
      * @param port
      */
-    private void createRpcClientCross(Transaction transaction, int port) throws Exception {
-        Event crossAppEvent = Cat.newEvent(CatConstant.CONSUMER_CALL_APP, Cat.getManager().getDomain());
-        Event crossServerEvent = Cat.newEvent(CatConstant.CONSUMER_CALL_SERVER, IpUtil.getLocalHostAddress());
-        Event crossPortEvent = Cat.newEvent(CatConstant.CONSUMER_CALL_PORT, String.valueOf(port));
-        crossAppEvent.setStatus(Event.SUCCESS);
-        crossServerEvent.setStatus(Event.SUCCESS);
-        crossPortEvent.setStatus(Event.SUCCESS);
-        completeEvent(crossAppEvent);
-        completeEvent(crossPortEvent);
-        completeEvent(crossServerEvent);
-        transaction.addChild(crossAppEvent);
-        transaction.addChild(crossPortEvent);
-        transaction.addChild(crossServerEvent);
+    private void createRpcClientCross(int port) throws Exception {
+        Cat.logEvent(CatConstant.CONSUMER_CALL_APP, Cat.getManager().getDomain());
+        Cat.logEvent(CatConstant.CONSUMER_CALL_SERVER, IpUtil.getLocalHostAddress());
+        Cat.logEvent(CatConstant.CONSUMER_CALL_PORT, String.valueOf(port));
     }
 
     /**
