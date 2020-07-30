@@ -58,8 +58,8 @@ public class FeignRequestInterceptor implements RequestInterceptor {
 
         Boolean catEnable = config.getBooleanProperty("use.common.cat", Boolean.FALSE);
         if (catEnable) {
-            int port = attributes.getRequest().getServerPort();
             try {
+                int port = attributes.getRequest().getServerPort();
                 createRpcClient(requestTemplate, port);
             } catch (Exception e) {
                 logger.warn("创建rpcClient链路失败", e);
@@ -141,7 +141,8 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         List<String> acceptableMediaTypes = Lists.newArrayList(MediaType.ALL_VALUE);
         requestTemplate.header(HeaderConstant.ACCEPT, acceptableMediaTypes);
         requestTemplate.header(HeaderConstant.CONNECTION, HTTP_HEADER_CONNECTION_VALUE);
-        requestTemplate.header(HeaderConstant.HTTP_HEADER_KEEP_ALIVE_KEY, HTTP_HEADER_KEEP_ALIVE_VALUE);
+        String keepAlive = config.getProperty("common.http.keep.alive.timeout", HTTP_HEADER_KEEP_ALIVE_VALUE);
+        requestTemplate.header(HeaderConstant.HTTP_HEADER_KEEP_ALIVE_KEY, keepAlive);
         requestTemplate.header(HeaderConstant.HTTP_HEADER_X_REQUESTED_WITH_KEY, HTTP_HEADER_X_REQUESTED_WITH_VALUE);
         requestTemplate.header(HeaderConstant.CONTENT_ENCODING, CHARSET_ENCODING);
         requestTemplate.header(HeaderConstant.X_TOKEN_KEY, X_TOKEN);
