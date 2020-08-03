@@ -48,6 +48,10 @@ public class HeaderConstant {
 
     public static final String TRACE_ID = "X-Trace-Id";
 
+    public static final String REQUEST_SOURCE = "REQUEST_SOURCE";
+
+    public static final String REQUEST_FEIGN = "FEIGN";
+
     // 客户端请求appName
     public static final String CONSUMER_SERVER_NAME = "X-Consumer-Server-Name";
 

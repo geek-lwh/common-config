@@ -47,6 +47,8 @@ public class FeignRequestInterceptor implements RequestInterceptor {
 
     private static Config config = ConfigService.getAppConfig();
 
+    private static Boolean feignLog = config.getBooleanProperty("feign.log", Boolean.FALSE);
+
     @Override
     public void apply(RequestTemplate requestTemplate) {
         initRequestHeader(requestTemplate);
@@ -66,7 +68,9 @@ public class FeignRequestInterceptor implements RequestInterceptor {
             }
         }
 
-        feignRequestLogging(requestTemplate);
+        if (feignLog) {
+            feignRequestLogging(requestTemplate);
+        }
     }
 
     /**
@@ -147,6 +151,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         requestTemplate.header(HeaderConstant.CONTENT_ENCODING, CHARSET_ENCODING);
         requestTemplate.header(HeaderConstant.X_TOKEN_KEY, X_TOKEN);
         requestTemplate.header(HeaderConstant.TRACE_ID, MDCUtil.getTraceId());
+        requestTemplate.header(HeaderConstant.REQUEST_SOURCE, HeaderConstant.REQUEST_FEIGN);
     }
 
     /**
