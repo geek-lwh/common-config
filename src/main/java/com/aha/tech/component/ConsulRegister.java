@@ -4,12 +4,14 @@ package com.aha.tech.component;
 import com.aha.tech.util.IpUtil;
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.agent.model.NewService;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 /**
  * 将服务注册到consul,
@@ -20,6 +22,8 @@ import org.springframework.stereotype.Component;
 public class ConsulRegister implements CommandLineRunner {
 
     private Logger logger = LoggerFactory.getLogger(ConsulRegister.class);
+
+    private final static String CONTEXT_PATH_META_DATA = "context_path";
 
     private final static String PROTOCOL_PREFIX = "http://";
 
@@ -34,8 +38,8 @@ public class ConsulRegister implements CommandLineRunner {
     @Value("${common.consul.server.port:${common.server.tomcat.port}}")
     private int port;
 
-    @Value("${common.consul.report.interval:10s}")
-    private String reportInterval;
+    @Value("${common.consul.check.interval:10s}")
+    private String checkInterval;
 
     @Value("${common.server.tomcat.contextPath:${common.server.tomcat.contextPath}}")
     private String contextPath;
@@ -45,31 +49,25 @@ public class ConsulRegister implements CommandLineRunner {
         try {
             ConsulClient client = new ConsulClient(consulAddress);
             String ip = IpUtil.getLocalHostAddress();
-            String http = PROTOCOL_PREFIX + ip + ":" + port;
-
+            String id = serverName + "_" + ip;
             NewService newService = new NewService();
-            newService.setId(serverName + "_" + ip);
+            newService.setId(id);
             newService.setName(serverName);
             newService.setPort(port);
             newService.setAddress(ip);
-
-            String sub = contextPath;
-            if (sub.equals("/")) {
-                sub = API_SUFFIX;
-            } else {
-                sub += API_SUFFIX;
-            }
-
-            http += sub;
-            newService.setTags(Lists.newArrayList(sub));
+            Map<String, String> properties = Maps.newHashMap();
+            properties.put(CONTEXT_PATH_META_DATA, contextPath);
+            newService.setMeta(properties);
+            String suffix = contextPath.equals("/") ? API_SUFFIX : contextPath + API_SUFFIX;
+            String checkUrl = PROTOCOL_PREFIX + ip + ":" + port + suffix;
             NewService.Check serviceCheck = new NewService.Check();
-            serviceCheck.setHttp(http);
-            serviceCheck.setInterval(reportInterval);
+            serviceCheck.setHttp(checkUrl);
+            serviceCheck.setInterval(checkInterval);
             newService.setCheck(serviceCheck);
 
             client.agentServiceRegister(newService);
         } catch (Exception e) {
-            logger.error("注册consul时,计算ip异常");
+            logger.error("注册consul时,计算ip异常", e);
         }
     }
 
