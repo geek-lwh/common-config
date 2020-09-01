@@ -58,11 +58,14 @@ public class ConsulRegister implements CommandLineRunner {
             newService.setName(serverName);
             newService.setPort(serverPort);
             newService.setAddress(ip);
-            Map<String, String> properties = Maps.newHashMap();
-            properties.put(CONTEXT_PATH_META_DATA, contextPath);
-            newService.setMeta(properties);
+
             String suffix = contextPath.equals("/") ? API_SUFFIX : contextPath + API_SUFFIX;
             String checkUrl = PROTOCOL_PREFIX + ip + ":" + serverPort + suffix;
+
+            Map<String, String> properties = Maps.newHashMap();
+            properties.put(CONTEXT_PATH_META_DATA, suffix);
+            newService.setMeta(properties);
+
             NewService.Check serviceCheck = new NewService.Check();
             serviceCheck.setHttp(checkUrl);
             serviceCheck.setInterval(checkInterval);
