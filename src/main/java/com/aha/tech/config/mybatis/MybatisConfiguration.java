@@ -1,7 +1,7 @@
 package com.aha.tech.config.mybatis;
 
-import com.aha.tech.config.mybatis.plugin.CatMybatisPlugin;
 import com.aha.tech.config.mybatis.plugin.PagePlugin;
+import com.aha.tech.config.mybatis.plugin.TracePlugin;
 import com.github.pagehelper.PageInterceptor;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -35,8 +35,11 @@ public class MybatisConfiguration {
     @Resource
     private DataSource dataSource;
 
-    @Value("${use.common.cat:false}")
-    private boolean useCat;
+//    @Value("${use.common.cat:false}")
+//    private boolean useCat;
+
+    @Value("${jaeger.sampler.enable:true}")
+    private Boolean enable;
 
     @Value("${common.jdbc.jdbcUrl}")
     private String jdbcUrl;
@@ -50,14 +53,13 @@ public class MybatisConfiguration {
         sqlSessionFactoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath*:mapper/*Mapper.xml"));
 
         PageInterceptor pageInterceptor = new PagePlugin().pageInterceptor();
-        CatMybatisPlugin catMybatisPlugin = new CatMybatisPlugin(jdbcUrl);
-        if (useCat) {
-            sqlSessionFactoryBean.setPlugins(new Interceptor[]{pageInterceptor, catMybatisPlugin});
+        TracePlugin tracePlugin = new TracePlugin(jdbcUrl);
+        if (enable) {
+            sqlSessionFactoryBean.setPlugins(new Interceptor[]{pageInterceptor, tracePlugin});
         } else {
             sqlSessionFactoryBean.setPlugins(new Interceptor[]{pageInterceptor});
         }
 
-        logger.info("sqlSessionFactory 加载cat拦截器 : {}", useCat);
         return sqlSessionFactoryBean.getObject();
     }
 

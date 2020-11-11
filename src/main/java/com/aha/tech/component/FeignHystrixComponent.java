@@ -1,6 +1,6 @@
 package com.aha.tech.component;
 
-import com.aha.tech.filter.cat.CatContext;
+import com.aha.tech.filter.tracer.CatContext;
 import com.aha.tech.model.XEnvDto;
 import com.aha.tech.threadlocal.CatContextThreadLocal;
 import com.aha.tech.threadlocal.XEnvThreadLocal;

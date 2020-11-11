@@ -3,7 +3,7 @@ package com.aha.tech.interceptor;
 import com.aha.tech.annotation.XEnv;
 import com.aha.tech.constant.CatConstant;
 import com.aha.tech.constant.HeaderConstant;
-import com.aha.tech.filter.cat.CatContext;
+import com.aha.tech.filter.tracer.CatContext;
 import com.aha.tech.model.XEnvDto;
 import com.aha.tech.threadlocal.CatContextThreadLocal;
 import com.aha.tech.threadlocal.XEnvThreadLocal;
