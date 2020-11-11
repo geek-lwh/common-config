@@ -1,7 +1,7 @@
 package com.aha.tech.util;
 
 import com.aha.tech.constant.HeaderConstant;
-import com.dianping.cat.Cat;
+import io.opentracing.util.GlobalTracer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +27,7 @@ public class MDCUtil {
     public static String getTraceId() {
         String traceId = MDC.get(MDCUtil.TRACE_ID);
         if (StringUtils.isBlank(traceId)) {
-            traceId = Cat.createMessageId();
+            traceId = GlobalTracer.get().activeSpan().context().toTraceId();
         }
 
         return traceId;
@@ -41,7 +41,7 @@ public class MDCUtil {
     public static String initTraceId(HttpServletRequest request) {
         String tId = request.getHeader(HeaderConstant.TRACE_ID);
         if (StringUtils.isBlank(tId)) {
-            tId = Cat.createMessageId();
+            tId = GlobalTracer.get().activeSpan().context().toTraceId();
         }
 
         return tId;

@@ -12,13 +12,15 @@ import java.util.Map;
  */
 public class TracerUtils {
 
-    public static final String CLASS_METHOD = "class.method";
-
     public static final String CLASS = "class";
 
     public static final String METHOD = "method";
 
     public static final String SQL = "sql";
+
+    public static final String REQUEST_FROM = "request.from";
+
+    public static final String REQUEST_IP = "request.ip";
 
 
     public static Map errorTraceMap(Exception e) {

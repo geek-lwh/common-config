@@ -1,16 +1,12 @@
 package com.aha.tech.interceptor;
 
 import com.aha.tech.annotation.XEnv;
-import com.aha.tech.constant.CatConstant;
 import com.aha.tech.constant.HeaderConstant;
 import com.aha.tech.model.XEnvDto;
 import com.aha.tech.threadlocal.XEnvThreadLocal;
-import com.aha.tech.util.IpUtil;
 import com.aha.tech.util.MDCUtil;
 import com.ctrip.framework.apollo.Config;
 import com.ctrip.framework.apollo.ConfigService;
-import com.dianping.cat.Cat;
-import com.dianping.cat.message.Event;
 import com.google.common.collect.Lists;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
@@ -65,26 +61,6 @@ public class FeignRequestInterceptor implements RequestInterceptor {
             initHeaderFromEnv(xEnvDto, requestTemplate);
         }
     }
-
-    /**
-     * 构建调用链路
-     * @param requestTemplate
-     */
-//    private void createRpcClient(RequestTemplate requestTemplate, int port) throws Exception {
-//        CatContext catContext = CatContextThreadLocal.get();
-//        if (catContext == null) {
-//            return;
-//        }
-//
-//        createRpcClientCross(port);
-//        Cat.logRemoteCallClient(catContext, Cat.getManager().getDomain());
-//        requestTemplate.header(CatConstant.CAT_HTTP_HEADER_ROOT_MESSAGE_ID, catContext.getProperty(Cat.Context.ROOT));
-//        requestTemplate.header(CatConstant.CAT_HTTP_HEADER_PARENT_MESSAGE_ID, catContext.getProperty(Cat.Context.PARENT));
-//        requestTemplate.header(CatConstant.CAT_HTTP_HEADER_CHILD_MESSAGE_ID, catContext.getProperty(Cat.Context.CHILD));
-//        requestTemplate.header(HeaderConstant.CONSUMER_SERVER_NAME, Cat.getManager().getDomain());
-//        String localAddress = IpUtil.getLocalHostAddress();
-//        requestTemplate.header(HeaderConstant.CONSUMER_SERVER_HOST, localAddress + ":" + port);
-//    }
 
     /**
      * 从xEnvDto中解析值到feign requestHeader
@@ -148,24 +124,6 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         sb.append("Feign request BODY : ").append(body);
 
         logger.info("Feign request INFO : {}", sb);
-    }
-
-    /**
-     * 创建RpcClient端链路
-     * @param port
-     */
-    private void createRpcClientCross(int port) throws Exception {
-        Cat.logEvent(CatConstant.CONSUMER_CALL_APP, Cat.getManager().getDomain());
-        Cat.logEvent(CatConstant.CONSUMER_CALL_SERVER, IpUtil.getLocalHostAddress());
-        Cat.logEvent(CatConstant.CONSUMER_CALL_PORT, String.valueOf(port));
-    }
-
-    /**
-     * event complete
-     * @param event
-     */
-    private void completeEvent(Event event) {
-        event.complete();
     }
 
     /**

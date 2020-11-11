@@ -52,10 +52,8 @@ public class HeaderConstant {
 
     public static final String REQUEST_FEIGN = "FEIGN";
 
-    // 客户端请求appName
-    public static final String CONSUMER_SERVER_NAME = "X-Consumer-Server-Name";
+    public static final String REQUEST_SERVER_NAME = "X-Consumer-Server-Name";
 
-    public static final String CONSUMER_SERVER_HOST = "X-Consumer-Server-Host";
+    public static final String REQUEST_SERVER_ADDRESS = "X-Consumer-Server-Address";
 
-    public static final String CONSUMER_SERVER_PORT = "X-Consumer-Server-Port";
 }

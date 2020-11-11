@@ -61,13 +61,11 @@
         <resetJUL>true</resetJUL>
     </contextListener>
 
-    <appender name="CatAppender" class="com.aha.tech.component.CatLogbackComponent"></appender>
 
     <root level="${logging.level.root}">
         <appender-ref ref="FILE"/>
         <appender-ref ref="ERROR_FILE"/>
         <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="CatAppender" />
     </root>
     
 </configuration>

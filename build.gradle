@@ -46,7 +46,7 @@ dependencies {
     // 3-part tool dependency
     compile("com.google.guava:guava:23.0")
 
-    
+
     compile("org.apache.commons:commons-lang3:3.7")
     compile("com.alibaba:fastjson:1.2.47")
     compile("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.4")
@@ -103,16 +103,11 @@ dependencies {
 
     // metrics
     compile("io.micrometer:micrometer-registry-prometheus:1.0.5")
-    compile ("com.ecwid.consul:consul-api:1.4.5")
+    compile("com.ecwid.consul:consul-api:1.4.5")
 
 
-    // cat
-    compile("com.aha.monitor:cat-client:3.0.1")
-    compile("org.unidal.framework:foundation-service:2.5.0")
-//    compile 'io.jaegertracing:jaeger-client:1.4.0'
-
-// https://mvnrepository.com/artifact/io.opentracing.contrib/opentracing-spring-jaeger-web-starter
-    compile group: 'io.opentracing.contrib', name: 'opentracing-spring-jaeger-web-starter', version: '3.2.2'
+    // tracer
+    compile("io.jaegertracing:jaeger-client:1.4.0")
 
 }
 
@@ -124,7 +119,7 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 
 
 def name = 'aha-commons-config'
-version = '3.7.1'
+version = '3.7.4'
 def group = 'com.aha.public'
 
 //上传jar命令 gradle publish

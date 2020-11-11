@@ -1,5 +1,6 @@
 package com.aha.tech.filter;
 
+import com.aha.tech.constant.HeaderConstant;
 import com.aha.tech.constant.OrderedConstant;
 import com.aha.tech.util.MDCUtil;
 import com.aha.tech.util.TracerUtils;
@@ -69,9 +70,10 @@ public class TracerServletFilter implements Filter {
         MDCUtil.putTraceId(span.context().toTraceId());
 
         try (Scope scope = tracer.scopeManager().activate(span)) {
-            Tags.SPAN_KIND.set(span, Tags.SPAN_KIND_CONSUMER);
             Tags.HTTP_URL.set(span, request.getRequestURI());
             Tags.HTTP_METHOD.set(span, request.getMethod());
+            span.setTag(TracerUtils.REQUEST_FROM, request.getHeader(HeaderConstant.REQUEST_SERVER_NAME));
+            span.setTag(TracerUtils.REQUEST_IP, request.getHeader(HeaderConstant.REQUEST_SERVER_ADDRESS));
             chain.doFilter(servletRequest, servletResponse);
         } catch (Exception e) {
             Map err = TracerUtils.errorTraceMap(e);

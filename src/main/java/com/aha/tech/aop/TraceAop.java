@@ -27,16 +27,16 @@ public class TraceAop {
         if (tracer != null) {
             final String cls = pjp.getTarget().getClass().getName();
             final String mName = pjp.getSignature().getName();
-            Tracer.SpanBuilder spanBuilder = tracer.buildSpan(TracerUtils.CLASS_METHOD)
+            Tracer.SpanBuilder spanBuilder = tracer.buildSpan(cls + "#" + mName)
                     .withTag(TracerUtils.CLASS, cls)
                     .withTag(TracerUtils.METHOD, mName);
 
             Span parentSpan = tracer.activeSpan();
             if (parentSpan != null) {
-                spanBuilder.asChildOf(parentSpan).start();
+                spanBuilder.asChildOf(parentSpan);
             }
-            Span childSpan = spanBuilder.start();
 
+            Span childSpan = spanBuilder.start();
             try (Scope scope = tracer.scopeManager().activate(childSpan)) {
                 return pjp.proceed();
             } catch (Exception e) {
