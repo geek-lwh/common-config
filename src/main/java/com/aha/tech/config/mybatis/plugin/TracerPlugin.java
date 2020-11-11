@@ -28,11 +28,11 @@ import java.util.*;
         @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class, CacheKey.class, BoundSql.class}),
         @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class,
                 RowBounds.class, ResultHandler.class})})
-public class TracePlugin implements Interceptor {
+public class TracerPlugin implements Interceptor {
 
     private String datasourceUrl;
 
-    public TracePlugin(String datasourceUrl) {
+    public TracerPlugin(String datasourceUrl) {
         this.datasourceUrl = datasourceUrl;
     }
 
