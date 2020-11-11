@@ -3,9 +3,7 @@ package com.aha.tech.interceptor;
 import com.aha.tech.annotation.XEnv;
 import com.aha.tech.constant.CatConstant;
 import com.aha.tech.constant.HeaderConstant;
-import com.aha.tech.filter.tracer.CatContext;
 import com.aha.tech.model.XEnvDto;
-import com.aha.tech.threadlocal.CatContextThreadLocal;
 import com.aha.tech.threadlocal.XEnvThreadLocal;
 import com.aha.tech.util.IpUtil;
 import com.aha.tech.util.MDCUtil;
@@ -21,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
@@ -53,21 +50,6 @@ public class FeignRequestInterceptor implements RequestInterceptor {
     public void apply(RequestTemplate requestTemplate) {
         initRequestHeader(requestTemplate);
         overwriteXEnv(requestTemplate);
-
-        Boolean catEnable = config.getBooleanProperty("use.common.cat", Boolean.FALSE);
-        if (catEnable) {
-            try {
-                int port = config.getIntProperty("common.server.tomcat.port", 0);
-                ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-                if (attributes != null) {
-                    port = attributes.getRequest().getServerPort();
-                }
-                createRpcClient(requestTemplate, port);
-            } catch (Exception e) {
-                logger.warn("创建rpcClient链路失败", e);
-            }
-        }
-
         if (feignLog) {
             feignRequestLogging(requestTemplate);
         }
@@ -88,21 +70,21 @@ public class FeignRequestInterceptor implements RequestInterceptor {
      * 构建调用链路
      * @param requestTemplate
      */
-    private void createRpcClient(RequestTemplate requestTemplate, int port) throws Exception {
-        CatContext catContext = CatContextThreadLocal.get();
-        if (catContext == null) {
-            return;
-        }
-
-        createRpcClientCross(port);
-        Cat.logRemoteCallClient(catContext, Cat.getManager().getDomain());
-        requestTemplate.header(CatConstant.CAT_HTTP_HEADER_ROOT_MESSAGE_ID, catContext.getProperty(Cat.Context.ROOT));
-        requestTemplate.header(CatConstant.CAT_HTTP_HEADER_PARENT_MESSAGE_ID, catContext.getProperty(Cat.Context.PARENT));
-        requestTemplate.header(CatConstant.CAT_HTTP_HEADER_CHILD_MESSAGE_ID, catContext.getProperty(Cat.Context.CHILD));
-        requestTemplate.header(HeaderConstant.CONSUMER_SERVER_NAME, Cat.getManager().getDomain());
-        String localAddress = IpUtil.getLocalHostAddress();
-        requestTemplate.header(HeaderConstant.CONSUMER_SERVER_HOST, localAddress + ":" + port);
-    }
+//    private void createRpcClient(RequestTemplate requestTemplate, int port) throws Exception {
+//        CatContext catContext = CatContextThreadLocal.get();
+//        if (catContext == null) {
+//            return;
+//        }
+//
+//        createRpcClientCross(port);
+//        Cat.logRemoteCallClient(catContext, Cat.getManager().getDomain());
+//        requestTemplate.header(CatConstant.CAT_HTTP_HEADER_ROOT_MESSAGE_ID, catContext.getProperty(Cat.Context.ROOT));
+//        requestTemplate.header(CatConstant.CAT_HTTP_HEADER_PARENT_MESSAGE_ID, catContext.getProperty(Cat.Context.PARENT));
+//        requestTemplate.header(CatConstant.CAT_HTTP_HEADER_CHILD_MESSAGE_ID, catContext.getProperty(Cat.Context.CHILD));
+//        requestTemplate.header(HeaderConstant.CONSUMER_SERVER_NAME, Cat.getManager().getDomain());
+//        String localAddress = IpUtil.getLocalHostAddress();
+//        requestTemplate.header(HeaderConstant.CONSUMER_SERVER_HOST, localAddress + ":" + port);
+//    }
 
     /**
      * 从xEnvDto中解析值到feign requestHeader
