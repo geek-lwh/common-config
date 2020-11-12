@@ -11,7 +11,6 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMapAdapter;
-import io.opentracing.propagation.TextMapInjectAdapter;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import org.slf4j.Logger;
@@ -57,6 +56,7 @@ public class TracerServletFilter implements Filter {
 
         Tracer.SpanBuilder spanBuilder = tracer.buildSpan(request.getRequestURI());
         try {
+            // 把header里的span信息和指定的map信息读取
             SpanContext parentSpan = tracer.extract(Format.Builtin.HTTP_HEADERS, new TextMapAdapter(hMap));
             if (parentSpan != null) {
                 spanBuilder.asChildOf(parentSpan);
@@ -65,6 +65,7 @@ public class TracerServletFilter implements Filter {
             spanBuilder.withTag("Error", "extract from request fail, error msg:" + e.getMessage());
         }
 
+
         // set current activate span
         Span span = spanBuilder.start();
         MDCUtil.putTraceId(span.context().toTraceId());
@@ -72,8 +73,8 @@ public class TracerServletFilter implements Filter {
         try (Scope scope = tracer.scopeManager().activate(span)) {
             Tags.HTTP_URL.set(span, request.getRequestURI());
             Tags.HTTP_METHOD.set(span, request.getMethod());
-            span.setTag(TracerUtils.REQUEST_FROM, request.getHeader(HeaderConstant.REQUEST_SERVER_NAME));
-            span.setTag(TracerUtils.REQUEST_IP, request.getHeader(HeaderConstant.REQUEST_SERVER_ADDRESS));
+            span.setTag(HeaderConstant.REQUEST_FROM, request.getHeader(HeaderConstant.REQUEST_FROM));
+            span.setTag(HeaderConstant.REQUEST_IP, request.getHeader(HeaderConstant.REQUEST_IP));
             chain.doFilter(servletRequest, servletResponse);
         } catch (Exception e) {
             Map err = TracerUtils.errorTraceMap(e);
@@ -89,23 +90,6 @@ public class TracerServletFilter implements Filter {
     @Override
     public void destroy() {
 
-    }
-
-    private void attachTraceInfo(Tracer tracer, Span span, final HttpServletRequest servletRequest) {
-        // 你想要发送的k,v 格式
-        Map<String, String> hMap = Maps.newHashMap();
-        Enumeration<String> headerNames = servletRequest.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String k = headerNames.nextElement();
-            String v = servletRequest.getHeader(k);
-            hMap.put(k, v);
-        }
-
-        Tags.SPAN_KIND.set(tracer.activeSpan(), Tags.SPAN_KIND_CLIENT);
-        Tags.HTTP_METHOD.set(tracer.activeSpan(), servletRequest.getMethod());
-        Tags.HTTP_URL.set(tracer.activeSpan(), servletRequest.getRequestURI());
-        // activeSpan().context() 有root,parent,child 等信息
-        tracer.inject(tracer.activeSpan().context(), Format.Builtin.TEXT_MAP_INJECT, new TextMapInjectAdapter(hMap));
     }
 
 }

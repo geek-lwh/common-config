@@ -52,8 +52,10 @@ public class HeaderConstant {
 
     public static final String REQUEST_FEIGN = "FEIGN";
 
-    public static final String REQUEST_SERVER_NAME = "X-Consumer-Server-Name";
+    public static final String REQUEST_FROM = "X-REQUEST_FROM";
 
-    public static final String REQUEST_SERVER_ADDRESS = "X-Consumer-Server-Address";
+    public static final String REQUEST_IP = "REQUEST_IP";
+
+    public static final String REQUEST_API = "REQUEST_API";
 
 }

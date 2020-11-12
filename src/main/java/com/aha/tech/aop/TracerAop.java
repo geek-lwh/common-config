@@ -19,9 +19,9 @@ import java.util.Map;
  */
 @Aspect
 @Component
-public class TraceAop {
+public class TracerAop {
 
-    @Around("@annotation(com.aha.tech.annotation.Trace)")
+    @Around("@annotation(com.aha.tech.annotation.Tracer)")
     public Object pxTraceProcess(ProceedingJoinPoint pjp) throws Throwable {
         Tracer tracer = GlobalTracer.get();
         if (tracer != null) {
@@ -36,16 +36,16 @@ public class TraceAop {
                 spanBuilder.asChildOf(parentSpan);
             }
 
-            Span childSpan = spanBuilder.start();
-            try (Scope scope = tracer.scopeManager().activate(childSpan)) {
+            Span span = spanBuilder.start();
+            try (Scope scope = tracer.scopeManager().activate(span)) {
                 return pjp.proceed();
             } catch (Exception e) {
-                Tags.ERROR.set(childSpan, true);
+                Tags.ERROR.set(span, true);
                 Map err = TracerUtils.errorTraceMap(e);
-                childSpan.log(err);
+                span.log(err);
                 throw e;
             } finally {
-                childSpan.finish();
+                span.finish();
             }
         }
 
