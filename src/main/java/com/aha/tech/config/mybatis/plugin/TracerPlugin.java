@@ -20,7 +20,10 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Properties;
 
 
 @Intercepts({
@@ -44,22 +47,22 @@ public class TracerPlugin implements Interceptor {
                 .withTag(Tags.DB_TYPE, TracerUtils.SQL)
                 .withTag(Tags.DB_INSTANCE, datasourceUrl)
                 .withTag(Tags.DB_STATEMENT, getSql(invocation, mappedStatement));
+
         Span parentSpan = tracer.activeSpan();
         if (parentSpan != null) {
             spanBuilder.asChildOf(parentSpan).start();
         }
 
-        Span childSpan = spanBuilder.start();
-        try (Scope scope = tracer.scopeManager().activate(childSpan)) {
+        Span span = spanBuilder.start();
+        try (Scope scope = tracer.scopeManager().activate(span)) {
+            TracerUtils.setClue(span);
             Object returnValue = invocation.proceed();
             return returnValue;
         } catch (Exception e) {
-            Tags.ERROR.set(childSpan, true);
-            Map err = TracerUtils.errorTraceMap(e);
-            childSpan.log(err);
+            TracerUtils.reportErrorTrace(e);
             throw e;
         } finally {
-            childSpan.finish();
+            span.finish();
         }
     }
 

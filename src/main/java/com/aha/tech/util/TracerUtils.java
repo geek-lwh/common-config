@@ -1,14 +1,17 @@
 package com.aha.tech.util;
 
+import com.aha.tech.constant.HeaderConstant;
 import com.google.common.collect.Maps;
+import io.opentracing.Span;
 import io.opentracing.log.Fields;
 import io.opentracing.tag.Tags;
+import io.opentracing.util.GlobalTracer;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
-
-import static com.aha.tech.constant.HeaderConstant.*;
 
 /**
  * @Author: luweihong
@@ -24,42 +27,66 @@ public class TracerUtils {
 
     public static final String SQL = "sql";
 
+    // baggage 前缀
+    public static final String BAGGAGE_PREFIX = "uberctx-";
+
+    public static final String BAGGAGE_HEADER_KEY = "jaeger-baggage";
+
+
     /**
-     * 构建一个traceMap 描述错误信息
+     * 上报一个error在trace中
      * @param e
      * @return
      */
-    public static Map errorTraceMap(Exception e) {
-        Map err = Maps.newHashMapWithExpectedSize(3);
+    public static void reportErrorTrace(Exception e) {
+        Span span = GlobalTracer.get().activeSpan();
+        Map err = Maps.newHashMapWithExpectedSize(6);
         err.put(Fields.EVENT, Tags.ERROR.getKey());
         err.put(Fields.ERROR_OBJECT, e);
         err.put(Fields.MESSAGE, e.getMessage());
-
-        return err;
+        Tags.ERROR.set(span, true);
+        span.log(err);
+        logger.error(e.getMessage(), e);
     }
 
     /**
-     * 构建一个跨进程调用的traceMap信息
-     * @param serverName
-     * @param port
-     * @param api
+     * 从header中解析相关的trace信息,优化默认方法
+     * 暂时禁用baggage item 所以自定义方法 免去所有header的判断
+     * @param servletRequest
      * @return
-     * @throws Exception
      */
-    public static Map attachTraceInfoMap(String serverName, int port, String api) {
-        Map<String, String> hMap = Maps.newHashMapWithExpectedSize(3);
-        String ip = null;
-        try {
-            ip = IpUtil.getLocalHostAddress();
-        } catch (Exception e) {
-            logger.error("构建traceInfo时 计算ip地址出错", e);
-            e.printStackTrace();
+    public static Map parseTraceContext(HttpServletRequest servletRequest) {
+        Map<String, String> hMap = Maps.newHashMap();
+
+        String traceId = servletRequest.getHeader(HeaderConstant.UBER_TRACE_ID);
+        if (StringUtils.isBlank(traceId)) {
+            return hMap;
         }
-        hMap.put(REQUEST_FROM, serverName);
-        hMap.put(REQUEST_IP, ip + ":" + port);
-        hMap.put(REQUEST_API, api);
+
+//        Enumeration<String> headerNames = servletRequest.getHeaderNames();
+//        while (headerNames.hasMoreElements()) {
+//            String h = headerNames.nextElement();
+//            if (h.startsWith(BAGGAGE_PREFIX) || h.equals(Constants.BAGGAGE_HEADER_KEY) || h.equals(Constants.DEBUG_ID_HEADER_KEY)) {
+//                hMap.put(h, servletRequest.getHeader(h));
+//            }
+//        }
+
+        hMap.put(HeaderConstant.UBER_TRACE_ID, traceId);
 
         return hMap;
+    }
+
+    public static void setErrorTag() {
+
+    }
+
+    /**
+     * 设置每个tace中span的线索
+     * @param span
+     */
+    public static void setClue(Span span) {
+        span.setTag(HeaderConstant.TRACE_ID, span.context().toTraceId());
+        span.setTag(HeaderConstant.SPAN_ID, span.context().toSpanId());
     }
 
 }

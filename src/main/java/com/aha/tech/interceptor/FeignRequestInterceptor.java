@@ -2,9 +2,10 @@ package com.aha.tech.interceptor;
 
 import com.aha.tech.annotation.XEnv;
 import com.aha.tech.constant.HeaderConstant;
+import com.aha.tech.filter.wrapper.RequestBuilderCarrier;
 import com.aha.tech.model.XEnvDto;
 import com.aha.tech.threadlocal.XEnvThreadLocal;
-import com.aha.tech.util.MDCUtil;
+import com.aha.tech.util.IpUtil;
 import com.aha.tech.util.TracerUtils;
 import com.ctrip.framework.apollo.Config;
 import com.ctrip.framework.apollo.ConfigService;
@@ -12,9 +13,9 @@ import com.google.common.collect.Lists;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import io.opentracing.Span;
+import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
-import io.opentracing.propagation.TextMapAdapter;
 import io.opentracing.util.GlobalTracer;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -27,7 +28,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.List;
-import java.util.Map;
 
 import static com.aha.tech.constant.HeaderConstant.*;
 
@@ -56,7 +56,12 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         overwriteXEnv(requestTemplate);
         Tracer tracer = GlobalTracer.get();
         if (tracer != null) {
-            attachTraceInfo(tracer, tracer.activeSpan(), port, requestTemplate.url());
+            Span span = tracer.activeSpan();
+            SpanContext spanContext = span.context();
+            TracerUtils.setClue(span);
+            requestTemplate.header(HeaderConstant.TRACE_ID, spanContext.toTraceId());
+            requestTemplate.header(HeaderConstant.SPAN_ID, spanContext.toSpanId());
+            tracer.inject(spanContext, Format.Builtin.HTTP_HEADERS, new RequestBuilderCarrier(requestTemplate));
         }
         if (feignLog) {
             feignRequestLogging(requestTemplate);
@@ -120,7 +125,13 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         requestTemplate.header(HeaderConstant.HTTP_HEADER_X_REQUESTED_WITH_KEY, HTTP_HEADER_X_REQUESTED_WITH_VALUE);
         requestTemplate.header(HeaderConstant.CONTENT_ENCODING, CHARSET_ENCODING);
         requestTemplate.header(HeaderConstant.X_TOKEN_KEY, X_TOKEN);
-        requestTemplate.header(HeaderConstant.TRACE_ID, MDCUtil.getTraceId());
+        requestTemplate.header(REQUEST_FROM, serverName);
+        requestTemplate.header(REQUEST_API, requestTemplate.url());
+        try {
+            requestTemplate.header(REQUEST_ADDRESS, IpUtil.getLocalHostAddress() + ":" + port);
+        } catch (Exception e) {
+            logger.error("构建traceInfo时 计算ip地址出错", e);
+        }
     }
 
     /**
@@ -135,20 +146,6 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         sb.append("Feign request BODY : ").append(body);
 
         logger.info("Feign request INFO : {}", sb);
-    }
-
-
-    /**
-     * 构建traceInfo
-     * @param tracer
-     * @param span
-     * @param port
-     * @param api
-     */
-    private void attachTraceInfo(Tracer tracer, Span span, int port, String api) {
-        Map<String, String> hMap = TracerUtils.attachTraceInfoMap(serverName, port, api);
-        // 把span的context上下文和map的信息放到header里去
-        tracer.inject(span.context(), Format.Builtin.HTTP_HEADERS, new TextMapAdapter(hMap));
     }
 
 }

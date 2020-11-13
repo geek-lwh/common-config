@@ -46,7 +46,7 @@ public class HeaderConstant {
 
     public static final String TEST_PROFILE_PREFIX = "test";
 
-    public static final String TRACE_ID = "X-Trace-Id";
+    public static final String TRACE_ID = "X-TRACE-ID";
 
     public static final String REQUEST_SOURCE = "REQUEST_SOURCE";
 
@@ -54,8 +54,13 @@ public class HeaderConstant {
 
     public static final String REQUEST_FROM = "X-REQUEST_FROM";
 
-    public static final String REQUEST_IP = "REQUEST_IP";
+    public static final String SPAN_ID = "X-SPAN_ID";
 
-    public static final String REQUEST_API = "REQUEST_API";
+    public static final String REQUEST_ADDRESS = "X-REQUEST_ADDRESS";
+
+    public static final String REQUEST_API = "X-REQUEST_API";
+
+    public static final String UBER_TRACE_ID = "UBER-TRACE-ID";
+
 
 }

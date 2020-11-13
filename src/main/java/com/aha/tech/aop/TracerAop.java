@@ -4,14 +4,11 @@ import com.aha.tech.util.TracerUtils;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
-import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 /**
  * @Author: luweihong
@@ -38,11 +35,10 @@ public class TracerAop {
 
             Span span = spanBuilder.start();
             try (Scope scope = tracer.scopeManager().activate(span)) {
+                TracerUtils.setClue(span);
                 return pjp.proceed();
             } catch (Exception e) {
-                Tags.ERROR.set(span, true);
-                Map err = TracerUtils.errorTraceMap(e);
-                span.log(err);
+                TracerUtils.reportErrorTrace(e);
                 throw e;
             } finally {
                 span.finish();

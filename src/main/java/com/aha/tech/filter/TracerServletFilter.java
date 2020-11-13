@@ -4,7 +4,6 @@ import com.aha.tech.constant.HeaderConstant;
 import com.aha.tech.constant.OrderedConstant;
 import com.aha.tech.util.MDCUtil;
 import com.aha.tech.util.TracerUtils;
-import com.google.common.collect.Maps;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Component;
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Enumeration;
 import java.util.Map;
 
 /**
@@ -35,7 +33,6 @@ public class TracerServletFilter implements Filter {
 
     private final Logger logger = LoggerFactory.getLogger(TracerServletFilter.class);
 
-
     @Override
     public void init(FilterConfig filterConfig) {
 
@@ -45,24 +42,18 @@ public class TracerServletFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
 
-        Map<String, String> hMap = Maps.newHashMap();
         Tracer tracer = GlobalTracer.get();
-        Enumeration<String> headerNames = request.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String k = headerNames.nextElement();
-            String v = request.getHeader(k);
-            hMap.put(k, v);
-        }
-
         Tracer.SpanBuilder spanBuilder = tracer.buildSpan(request.getRequestURI());
         try {
             // 把header里的span信息和指定的map信息读取
+            Map<String, String> hMap = TracerUtils.parseTraceContext(request);
             SpanContext parentSpan = tracer.extract(Format.Builtin.HTTP_HEADERS, new TextMapAdapter(hMap));
             if (parentSpan != null) {
                 spanBuilder.asChildOf(parentSpan);
             }
         } catch (IllegalArgumentException e) {
             spanBuilder.withTag("Error", "extract from request fail, error msg:" + e.getMessage());
+            logger.error("解析trace context出现异常", e);
         }
 
 
@@ -73,13 +64,12 @@ public class TracerServletFilter implements Filter {
         try (Scope scope = tracer.scopeManager().activate(span)) {
             Tags.HTTP_URL.set(span, request.getRequestURI());
             Tags.HTTP_METHOD.set(span, request.getMethod());
+            TracerUtils.setClue(span);
             span.setTag(HeaderConstant.REQUEST_FROM, request.getHeader(HeaderConstant.REQUEST_FROM));
-            span.setTag(HeaderConstant.REQUEST_IP, request.getHeader(HeaderConstant.REQUEST_IP));
+            span.setTag(HeaderConstant.REQUEST_ADDRESS, request.getHeader(HeaderConstant.REQUEST_ADDRESS));
             chain.doFilter(servletRequest, servletResponse);
         } catch (Exception e) {
-            Map err = TracerUtils.errorTraceMap(e);
-            Tags.ERROR.set(span, true);
-            span.log(err);
+            TracerUtils.reportErrorTrace(e);
             logger.error(e.getMessage(), e);
         } finally {
             span.finish();
