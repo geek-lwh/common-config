@@ -13,11 +13,11 @@ import java.util.Map;
  * 用于trace inject时的封装
  *
  */
-public class RequestBuilderCarrier implements TextMap {
+public class FeignCarrierWrapper implements TextMap {
 
     public RequestTemplate requestTemplate;
 
-    public RequestBuilderCarrier(RequestTemplate requestTemplate) {
+    public FeignCarrierWrapper(RequestTemplate requestTemplate) {
         this.requestTemplate = requestTemplate;
     }
 

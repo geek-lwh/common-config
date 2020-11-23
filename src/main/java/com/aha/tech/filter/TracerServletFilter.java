@@ -14,12 +14,14 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -31,6 +33,18 @@ import java.util.Map;
 @WebFilter(filterName = "tracerServletFilter", urlPatterns = "/*")
 public class TracerServletFilter implements Filter {
 
+    @Value("${common.server.tomcat.contextPath:/}")
+    private String contextPath;
+
+    private String actuatorPrefix = contextPath + "/actuator";
+
+    private String swaggerPrefix = contextPath + "swagger";
+
+    private String webjarsPrefix = contextPath + "/webjars";
+
+    private String docPrefix = contextPath + "/v2/api-docs";
+
+
     private final Logger logger = LoggerFactory.getLogger(TracerServletFilter.class);
 
     @Override
@@ -40,8 +54,9 @@ public class TracerServletFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) {
-        HttpServletRequest request = (HttpServletRequest) servletRequest;
+        excludeTraceUrl(servletRequest, servletResponse, chain);
 
+        HttpServletRequest request = (HttpServletRequest) servletRequest;
         Tracer tracer = GlobalTracer.get();
         Tracer.SpanBuilder spanBuilder = tracer.buildSpan(request.getRequestURI());
         try {
@@ -80,6 +95,40 @@ public class TracerServletFilter implements Filter {
     @Override
     public void destroy() {
 
+    }
+
+    /**
+     * 排除trace监控的url swagger promethues等
+     * @param servletRequest
+     * @param servletResponse
+     * @param chain
+     */
+    private void excludeTraceUrl(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) {
+        HttpServletRequest request = (HttpServletRequest) servletRequest;
+        Boolean isExclude = isExcludeURI(request.getRequestURI());
+        if (!isExclude) {
+            return;
+        }
+
+        try {
+            chain.doFilter(servletRequest, servletResponse);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ServletException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 是否是需要排除监控的url
+     * @param URI
+     * @return
+     */
+    private Boolean isExcludeURI(String URI) {
+        return URI.startsWith(actuatorPrefix)
+                || URI.startsWith(swaggerPrefix)
+                || URI.startsWith(webjarsPrefix)
+                || URI.startsWith(docPrefix);
     }
 
 }

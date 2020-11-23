@@ -47,11 +47,6 @@ public class WebConfiguration implements WebMvcConfigurer {
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
         MappingJackson2HttpMessageConverter webMessageConverter = mappingJackson2HttpMessageConverter();
-//        List<MediaType> supportedMediaTypes = new ArrayList<>();
-//        supportedMediaTypes.add(MediaType.APPLICATION_JSON);
-//        supportedMediaTypes.add(MediaType.APPLICATION_JSON_UTF8);
-//        supportedMediaTypes.add(MediaType.TEXT_PLAIN);
-//        webMessageConverter.setSupportedMediaTypes(supportedMediaTypes);
         converters.add(webMessageConverter);
 
         logger.info("web http message converter init finish >> {} ", webMessageConverter);

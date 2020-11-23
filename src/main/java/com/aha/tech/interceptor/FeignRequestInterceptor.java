@@ -2,7 +2,7 @@ package com.aha.tech.interceptor;
 
 import com.aha.tech.annotation.XEnv;
 import com.aha.tech.constant.HeaderConstant;
-import com.aha.tech.filter.wrapper.RequestBuilderCarrier;
+import com.aha.tech.filter.wrapper.FeignCarrierWrapper;
 import com.aha.tech.model.XEnvDto;
 import com.aha.tech.threadlocal.XEnvThreadLocal;
 import com.aha.tech.util.IpUtil;
@@ -61,7 +61,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
             TracerUtils.setClue(span);
             requestTemplate.header(HeaderConstant.TRACE_ID, spanContext.toTraceId());
             requestTemplate.header(HeaderConstant.SPAN_ID, spanContext.toSpanId());
-            tracer.inject(spanContext, Format.Builtin.HTTP_HEADERS, new RequestBuilderCarrier(requestTemplate));
+            tracer.inject(spanContext, Format.Builtin.HTTP_HEADERS, new FeignCarrierWrapper(requestTemplate));
         }
         if (feignLog) {
             feignRequestLogging(requestTemplate);
