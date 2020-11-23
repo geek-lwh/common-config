@@ -14,9 +14,10 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
@@ -31,32 +32,56 @@ import java.util.Map;
 @Component
 @Order(OrderedConstant.TRACE_FILTER_ORDERED)
 @WebFilter(filterName = "tracerServletFilter", urlPatterns = "/*")
-public class TracerServletFilter implements Filter {
+public class TraceFilter implements Filter {
 
-    @Value("${common.server.tomcat.contextPath:/}")
-    private String contextPath;
+    private String actuatorPrefix;
 
-    private String actuatorPrefix = contextPath + "/actuator";
+    private String swaggerPrefix;
 
-    private String swaggerPrefix = contextPath + "swagger";
+    private String webjarsPrefix;
 
-    private String webjarsPrefix = contextPath + "/webjars";
-
-    private String docPrefix = contextPath + "/v2/api-docs";
+    private String docPrefix;
 
 
-    private final Logger logger = LoggerFactory.getLogger(TracerServletFilter.class);
+    private final Logger logger = LoggerFactory.getLogger(TraceFilter.class);
 
     @Override
     public void init(FilterConfig filterConfig) {
+        ServletContext context = filterConfig.getServletContext();
+        ApplicationContext ac = WebApplicationContextUtils.getWebApplicationContext(context);
+        String contextPath = ac.getEnvironment().getProperty("common.server.tomcat.contextPath", "/");
+        actuatorPrefix = contextPath + "/actuator";
+        swaggerPrefix = contextPath + "/swagger";
+        webjarsPrefix = contextPath + "/webjars";
+        docPrefix = contextPath + "/v2/api-docs";
 
     }
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) {
-        excludeTraceUrl(servletRequest, servletResponse, chain);
-
         HttpServletRequest request = (HttpServletRequest) servletRequest;
+        Boolean isExclude = isExcludeURI(request.getRequestURI());
+        try {
+            if (isExclude) {
+                chain.doFilter(servletRequest, servletResponse);
+            } else {
+                doTracingFiltere(servletRequest, servletResponse, chain, request);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ServletException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 记录tracing
+     * @param servletRequest
+     * @param servletResponse
+     * @param chain
+     * @param request
+     */
+    private void doTracingFiltere(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain, HttpServletRequest request) {
         Tracer tracer = GlobalTracer.get();
         Tracer.SpanBuilder spanBuilder = tracer.buildSpan(request.getRequestURI());
         try {
@@ -89,7 +114,6 @@ public class TracerServletFilter implements Filter {
         } finally {
             span.finish();
         }
-
     }
 
     @Override
@@ -98,29 +122,7 @@ public class TracerServletFilter implements Filter {
     }
 
     /**
-     * 排除trace监控的url swagger promethues等
-     * @param servletRequest
-     * @param servletResponse
-     * @param chain
-     */
-    private void excludeTraceUrl(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) {
-        HttpServletRequest request = (HttpServletRequest) servletRequest;
-        Boolean isExclude = isExcludeURI(request.getRequestURI());
-        if (!isExclude) {
-            return;
-        }
-
-        try {
-            chain.doFilter(servletRequest, servletResponse);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ServletException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * 是否是需要排除监控的url
+     * 是否是需要排除监控的url,如果是,则不需要trace监控
      * @param URI
      * @return
      */
