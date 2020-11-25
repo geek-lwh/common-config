@@ -12,6 +12,7 @@ import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMapAdapter;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -48,8 +49,11 @@ public class TraceFilter implements Filter {
     public void init(FilterConfig filterConfig) {
         ServletContext context = filterConfig.getServletContext();
         ApplicationContext ac = WebApplicationContextUtils.getWebApplicationContext(context);
-        String contextPath = ac.getEnvironment().getProperty("common.server.tomcat.contextPath", "");
-        actuatorPrefix = contextPath + "/actuator";
+        String contextPath = ac.getEnvironment().getProperty("common.server.tomcat.contextPath", "/");
+        if (contextPath.equals("/")) {
+            contextPath = Strings.EMPTY;
+        }
+        actuatorPrefix = contextPath + "/actuator/prometheus";
         swaggerPrefix = contextPath + "/swagger";
         webjarsPrefix = contextPath + "/webjars";
         docPrefix = contextPath + "/v2/api-docs";
@@ -124,20 +128,15 @@ public class TraceFilter implements Filter {
      * @return
      */
     private Boolean isExcludeURI(String URI) {
-        return URI.startsWith(actuatorPrefix)
+        return URI.equals(actuatorPrefix)
                 || URI.startsWith(swaggerPrefix)
                 || URI.startsWith(webjarsPrefix)
                 || URI.startsWith(docPrefix);
     }
 
     public static void main(String[] args) {
-        String request = "/actuator/prometheus";
-        String actuatorPrefix = "/actuator";
-        if (request.startsWith(actuatorPrefix)) {
-            System.out.println("true");
-        } else {
-            System.out.println("false");
-        }
-    }
+        String a = "/actuator/prometheus";
 
+
+    }
 }
