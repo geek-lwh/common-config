@@ -22,7 +22,6 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -49,12 +48,11 @@ public class TraceFilter implements Filter {
     public void init(FilterConfig filterConfig) {
         ServletContext context = filterConfig.getServletContext();
         ApplicationContext ac = WebApplicationContextUtils.getWebApplicationContext(context);
-        String contextPath = ac.getEnvironment().getProperty("common.server.tomcat.contextPath", "/");
+        String contextPath = ac.getEnvironment().getProperty("common.server.tomcat.contextPath", "");
         actuatorPrefix = contextPath + "/actuator";
         swaggerPrefix = contextPath + "/swagger";
         webjarsPrefix = contextPath + "/webjars";
         docPrefix = contextPath + "/v2/api-docs";
-
     }
 
     @Override
@@ -65,11 +63,10 @@ public class TraceFilter implements Filter {
             if (isExclude) {
                 chain.doFilter(servletRequest, servletResponse);
             } else {
-                doTracingFiltere(servletRequest, servletResponse, chain, request);
+                doTracingFilter(servletRequest, servletResponse, chain, request);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ServletException e) {
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
             e.printStackTrace();
         }
     }
@@ -81,7 +78,7 @@ public class TraceFilter implements Filter {
      * @param chain
      * @param request
      */
-    private void doTracingFiltere(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain, HttpServletRequest request) {
+    private void doTracingFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain, HttpServletRequest request) {
         Tracer tracer = GlobalTracer.get();
         Tracer.SpanBuilder spanBuilder = tracer.buildSpan(request.getRequestURI());
         try {
@@ -131,6 +128,16 @@ public class TraceFilter implements Filter {
                 || URI.startsWith(swaggerPrefix)
                 || URI.startsWith(webjarsPrefix)
                 || URI.startsWith(docPrefix);
+    }
+
+    public static void main(String[] args) {
+        String request = "/actuator/prometheus";
+        String actuatorPrefix = "/actuator";
+        if (request.startsWith(actuatorPrefix)) {
+            System.out.println("true");
+        } else {
+            System.out.println("false");
+        }
     }
 
 }
