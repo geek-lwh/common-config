@@ -16,9 +16,9 @@ import org.springframework.stereotype.Component;
  */
 @Aspect
 @Component
-public class TracerAop {
+public class TraceAop {
 
-    @Around("@annotation(com.aha.tech.annotation.Tracer)")
+    @Around("@annotation(com.aha.tech.annotation.Trace)")
     public Object pxTraceProcess(ProceedingJoinPoint pjp) throws Throwable {
         Tracer tracer = GlobalTracer.get();
         if (tracer != null) {

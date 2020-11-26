@@ -31,11 +31,11 @@ import java.util.Properties;
         @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class, CacheKey.class, BoundSql.class}),
         @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class,
                 RowBounds.class, ResultHandler.class})})
-public class TracerPlugin implements Interceptor {
+public class TracePlugin implements Interceptor {
 
     private String datasourceUrl;
 
-    public TracerPlugin(String datasourceUrl) {
+    public TracePlugin(String datasourceUrl) {
         this.datasourceUrl = datasourceUrl;
     }
 

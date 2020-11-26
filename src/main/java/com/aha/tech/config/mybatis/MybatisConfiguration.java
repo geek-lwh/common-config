@@ -1,7 +1,7 @@
 package com.aha.tech.config.mybatis;
 
 import com.aha.tech.config.mybatis.plugin.PagePlugin;
-import com.aha.tech.config.mybatis.plugin.TracerPlugin;
+import com.aha.tech.config.mybatis.plugin.TracePlugin;
 import com.github.pagehelper.PageInterceptor;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -35,9 +35,6 @@ public class MybatisConfiguration {
     @Resource
     private DataSource dataSource;
 
-//    @Value("${use.common.cat:false}")
-//    private boolean useCat;
-
     @Value("${jaeger.sampler.enable:true}")
     private Boolean enable;
 
@@ -53,7 +50,7 @@ public class MybatisConfiguration {
         sqlSessionFactoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath*:mapper/*Mapper.xml"));
 
         PageInterceptor pageInterceptor = new PagePlugin().pageInterceptor();
-        TracerPlugin tracerPlugin = new TracerPlugin(jdbcUrl);
+        TracePlugin tracerPlugin = new TracePlugin(jdbcUrl);
         if (enable) {
             sqlSessionFactoryBean.setPlugins(new Interceptor[]{pageInterceptor, tracerPlugin});
         } else {
@@ -62,7 +59,6 @@ public class MybatisConfiguration {
 
         return sqlSessionFactoryBean.getObject();
     }
-
 
     @Primary
     @Bean(name = "sqlSessionTemplate")
