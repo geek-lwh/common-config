@@ -1,6 +1,6 @@
 package com.aha.tech.config.mybatis.plugin;
 
-import com.aha.tech.util.TracerUtils;
+import com.aha.tech.util.TraceUtils;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -44,7 +44,7 @@ public class TracePlugin implements Interceptor {
         MappedStatement mappedStatement = (MappedStatement) invocation.getArgs()[0];
         String methodName = this.getMethodName(mappedStatement);
         Tracer.SpanBuilder spanBuilder = tracer.buildSpan(methodName)
-                .withTag(Tags.DB_TYPE, TracerUtils.SQL)
+                .withTag(Tags.DB_TYPE, TraceUtils.SQL)
                 .withTag(Tags.DB_INSTANCE, datasourceUrl)
                 .withTag(Tags.DB_STATEMENT, getSql(invocation, mappedStatement));
 
@@ -55,11 +55,11 @@ public class TracePlugin implements Interceptor {
 
         Span span = spanBuilder.start();
         try (Scope scope = tracer.scopeManager().activate(span)) {
-            TracerUtils.setClue(span);
+            TraceUtils.setClue(span);
             Object returnValue = invocation.proceed();
             return returnValue;
         } catch (Exception e) {
-            TracerUtils.reportErrorTrace(e);
+            TraceUtils.reportErrorTrace(e);
             throw e;
         } finally {
             span.finish();

@@ -17,9 +17,9 @@ import java.util.Map;
  * @Author: luweihong
  * @Date: 2020/11/11
  */
-public class TracerUtils {
+public class TraceUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(TracerUtils.class);
+    private static final Logger logger = LoggerFactory.getLogger(TraceUtils.class);
 
     public static final String CLASS = "class";
 
@@ -74,10 +74,6 @@ public class TracerUtils {
         hMap.put(HeaderConstant.UBER_TRACE_ID, traceId);
 
         return hMap;
-    }
-
-    public static void setErrorTag() {
-
     }
 
     /**
