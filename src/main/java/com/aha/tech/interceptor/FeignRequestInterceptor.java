@@ -6,7 +6,7 @@ import com.aha.tech.filter.wrapper.FeignCarrierWrapper;
 import com.aha.tech.model.XEnvDto;
 import com.aha.tech.threadlocal.XEnvThreadLocal;
 import com.aha.tech.util.IpUtil;
-import com.aha.tech.util.TraceUtils;
+import com.aha.tech.util.TraceUtil;
 import com.ctrip.framework.apollo.Config;
 import com.ctrip.framework.apollo.ConfigService;
 import com.google.common.collect.Lists;
@@ -58,7 +58,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         if (tracer != null) {
             Span span = tracer.activeSpan();
             SpanContext spanContext = span.context();
-            TraceUtils.setClue(span);
+            TraceUtil.setClue(span);
             requestTemplate.header(HeaderConstant.TRACE_ID, spanContext.toTraceId());
             requestTemplate.header(HeaderConstant.SPAN_ID, spanContext.toSpanId());
             tracer.inject(spanContext, Format.Builtin.HTTP_HEADERS, new FeignCarrierWrapper(requestTemplate));

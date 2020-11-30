@@ -3,7 +3,7 @@ package com.aha.tech.filter;
 import com.aha.tech.constant.HeaderConstant;
 import com.aha.tech.constant.OrderedConstant;
 import com.aha.tech.util.MDCUtil;
-import com.aha.tech.util.TraceUtils;
+import com.aha.tech.util.TraceUtil;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
@@ -87,7 +87,7 @@ public class TraceFilter implements Filter {
         Tracer.SpanBuilder spanBuilder = tracer.buildSpan(request.getRequestURI());
         try {
             // 把header里的span信息和指定的map信息读取
-            Map<String, String> hMap = TraceUtils.parseTraceContext(request);
+            Map<String, String> hMap = TraceUtil.parseTraceContext(request);
             SpanContext parentSpan = tracer.extract(Format.Builtin.HTTP_HEADERS, new TextMapAdapter(hMap));
             if (parentSpan != null) {
                 spanBuilder.asChildOf(parentSpan);
@@ -105,12 +105,12 @@ public class TraceFilter implements Filter {
         try (Scope scope = tracer.scopeManager().activate(span)) {
             Tags.HTTP_URL.set(span, request.getRequestURI());
             Tags.HTTP_METHOD.set(span, request.getMethod());
-            TraceUtils.setClue(span);
+            TraceUtil.setClue(span);
             span.setTag(HeaderConstant.REQUEST_FROM, request.getHeader(HeaderConstant.REQUEST_FROM));
             span.setTag(HeaderConstant.REQUEST_ADDRESS, request.getHeader(HeaderConstant.REQUEST_ADDRESS));
             chain.doFilter(servletRequest, servletResponse);
         } catch (Exception e) {
-            TraceUtils.reportErrorTrace(e);
+            TraceUtil.reportErrorTrace(e);
             logger.error(e.getMessage(), e);
         } finally {
             span.finish();

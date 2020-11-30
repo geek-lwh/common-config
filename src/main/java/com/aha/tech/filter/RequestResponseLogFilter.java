@@ -3,6 +3,7 @@ package com.aha.tech.filter;
 import com.aha.tech.constant.OrderedConstant;
 import com.aha.tech.filter.wrapper.RequestWrapper;
 import com.aha.tech.filter.wrapper.ResponseWrapper;
+import com.aha.tech.threadlocal.RequestLogThreadLocal;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,28 @@ public class RequestResponseLogFilter extends OncePerRequestFilter {
         RequestWrapper requestWrapper = new RequestWrapper(request);
         ResponseWrapper responseWrapper = new ResponseWrapper(response);
 
+        try {
+            StringBuilder requestLog = buildRequestLog(uri, requestWrapper);
+            RequestLogThreadLocal.set(requestLog.toString());
+            if (null == requestWrapper) {
+                filterChain.doFilter(request, response);
+            } else {
+                filterChain.doFilter(requestWrapper, responseWrapper);
+            }
+            buildResponseLog(response, responseWrapper);
+        } finally {
+            RequestLogThreadLocal.remove();
+        }
+
+    }
+
+    /**
+     * 构造请求日志
+     * @param uri
+     * @param requestWrapper
+     * @return
+     */
+    private StringBuilder buildRequestLog(String uri, RequestWrapper requestWrapper) {
         StringBuilder requestLog = new StringBuilder();
 
         requestLog.append(System.lineSeparator());
@@ -64,13 +87,16 @@ public class RequestResponseLogFilter extends OncePerRequestFilter {
         requestLog.append(System.lineSeparator());
 
         logger.info("{}", requestLog);
+        return requestLog;
+    }
 
-        if (null == requestWrapper) {
-            filterChain.doFilter(request, response);
-        } else {
-            filterChain.doFilter(requestWrapper, responseWrapper);
-        }
-
+    /**
+     * 构造响应日志
+     * @param response
+     * @param responseWrapper
+     * @throws IOException
+     */
+    private void buildResponseLog(HttpServletResponse response, ResponseWrapper responseWrapper) throws IOException {
         String result = new String(responseWrapper.getResponseData());
         ServletOutputStream outputStream = response.getOutputStream();
         outputStream.write(result.getBytes());
@@ -91,7 +117,7 @@ public class RequestResponseLogFilter extends OncePerRequestFilter {
      * @return
      */
     private Boolean skipLogging(String uri) {
-        return uri.contains("prometheus") || uri.contains("webjars") || uri.contains("swagger") || uri.contains("api-docs") || uri.contains("favicon");
+        return uri.equals("prometheus");
     }
 
 }

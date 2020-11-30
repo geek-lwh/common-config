@@ -14,7 +14,4 @@ public class OrderedConstant {
 
     public static final int REQUEST_RESPONSE_FILTER_ORDERED = RESPONSE_FILTER + 1;
 
-    public static final int CAT_CONTEXT_FILTER_ORDERED = REQUEST_RESPONSE_FILTER_ORDERED + 1;
-
-
 }

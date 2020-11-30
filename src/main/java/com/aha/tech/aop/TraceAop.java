@@ -1,6 +1,6 @@
 package com.aha.tech.aop;
 
-import com.aha.tech.util.TraceUtils;
+import com.aha.tech.util.TraceUtil;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -25,8 +25,8 @@ public class TraceAop {
             final String cls = pjp.getTarget().getClass().getName();
             final String mName = pjp.getSignature().getName();
             Tracer.SpanBuilder spanBuilder = tracer.buildSpan(cls + "#" + mName)
-                    .withTag(TraceUtils.CLASS, cls)
-                    .withTag(TraceUtils.METHOD, mName);
+                    .withTag(TraceUtil.CLASS, cls)
+                    .withTag(TraceUtil.METHOD, mName);
 
             Span parentSpan = tracer.activeSpan();
             if (parentSpan != null) {
@@ -35,10 +35,10 @@ public class TraceAop {
 
             Span span = spanBuilder.start();
             try (Scope scope = tracer.scopeManager().activate(span)) {
-                TraceUtils.setClue(span);
+                TraceUtil.setClue(span);
                 return pjp.proceed();
             } catch (Exception e) {
-                TraceUtils.reportErrorTrace(e);
+                TraceUtil.reportErrorTrace(e);
                 throw e;
             } finally {
                 span.finish();

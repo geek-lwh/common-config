@@ -17,9 +17,9 @@ import java.util.Map;
  * @Author: luweihong
  * @Date: 2020/11/11
  */
-public class TraceUtils {
+public class TraceUtil {
 
-    private static final Logger logger = LoggerFactory.getLogger(TraceUtils.class);
+    private static final Logger logger = LoggerFactory.getLogger(TraceUtil.class);
 
     public static final String CLASS = "class";
 
