@@ -4,7 +4,7 @@ package com.aha.tech.exception;
  * @Author: luweihong
  * @Date: 2019/6/10
  */
-public class AuthenticationFailedException extends BaseException{
+public class AuthenticationFailedException extends HowlersException {
 
     public AuthenticationFailedException() {
         super("该接口不对访客开放", 500500);

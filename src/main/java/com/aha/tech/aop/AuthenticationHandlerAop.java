@@ -43,7 +43,7 @@ public class AuthenticationHandlerAop {
     }
 
     @Before("verify()")
-    public void handler(JoinPoint joinPoint) throws Exception {
+    public void handler(JoinPoint joinPoint) {
         MethodSignature joinPointObject = (MethodSignature) joinPoint.getSignature();
         Method method = joinPointObject.getMethod();
         Authentication classAnnotation = AnnotationUtils.findAnnotation(method.getDeclaringClass(), Authentication.class);
@@ -79,14 +79,14 @@ public class AuthenticationHandlerAop {
      */
     private void verifyBody(JoinPoint joinPoint, String api) {
         Object[] paramsArray = joinPoint.getArgs();
-        if(paramsArray.length <= 0){
+        if (paramsArray.length <= 0) {
             logger.error("校验userId出现异常");
             throw new AuthenticationFailedException(api);
         }
 
         Object param = paramsArray[0];
         List<Object> list = Lists.newArrayList(param);
-        list.forEach( obj -> {
+        list.forEach(obj -> {
             Map<String, Object> body = this.convertObjToMap(obj);
             if (!body.containsKey(USER_FILED)) {
                 throw new AuthenticationFailedException(api);
