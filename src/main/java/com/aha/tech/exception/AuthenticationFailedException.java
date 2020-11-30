@@ -6,12 +6,16 @@ package com.aha.tech.exception;
  */
 public class AuthenticationFailedException extends HowlersException {
 
+    public static final String AUTHENTICATION_FAILED_MESSAGE = "该接口不对访客开放";
+
+    public static final Integer AUTHENTICATION_FAILED_CODE = 500500;
+
     public AuthenticationFailedException() {
-        super("该接口不对访客开放", 500500);
+        super(AUTHENTICATION_FAILED_MESSAGE, AUTHENTICATION_FAILED_CODE);
     }
 
-    public AuthenticationFailedException(String api) {
-        super("该接口不对访客开放", 500500);
+    public AuthenticationFailedException(String message) {
+        super(message, AUTHENTICATION_FAILED_CODE);
     }
 
     public AuthenticationFailedException(String msg, int code) {
