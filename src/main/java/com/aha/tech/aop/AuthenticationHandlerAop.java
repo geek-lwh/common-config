@@ -1,7 +1,7 @@
 package com.aha.tech.aop;
 
 import com.aha.tech.annotation.Authentication;
-import com.aha.tech.exception.AuthenticationFailedException;
+import com.aha.tech.exception.AuthenticationFailedExceptionHandler;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
@@ -81,7 +81,7 @@ public class AuthenticationHandlerAop {
         Object[] paramsArray = joinPoint.getArgs();
         if (paramsArray.length <= 0) {
             logger.error("校验userId出现异常");
-            throw new AuthenticationFailedException(api);
+            throw new AuthenticationFailedExceptionHandler(api);
         }
 
         Object param = paramsArray[0];
@@ -89,12 +89,12 @@ public class AuthenticationHandlerAop {
         list.forEach(obj -> {
             Map<String, Object> body = this.convertObjToMap(obj);
             if (!body.containsKey(USER_FILED)) {
-                throw new AuthenticationFailedException(api);
+                throw new AuthenticationFailedExceptionHandler(api);
             }
 
             Long userId = body.get(USER_FILED) == null ? null : Long.parseLong(body.get(USER_FILED).toString());
             if (userId == null || userId <= 0l) {
-                throw new AuthenticationFailedException(api);
+                throw new AuthenticationFailedExceptionHandler(api);
             }
         });
 
@@ -109,11 +109,11 @@ public class AuthenticationHandlerAop {
         String uId = request.getParameter(USER_PARAM_FILED);
 
         if (StringUtils.isBlank(uId)) {
-            throw new AuthenticationFailedException(api);
+            throw new AuthenticationFailedExceptionHandler(api);
         }
 
         if (Long.parseLong(uId) <= 0l) {
-            throw new AuthenticationFailedException(api);
+            throw new AuthenticationFailedExceptionHandler(api);
         }
     }
 

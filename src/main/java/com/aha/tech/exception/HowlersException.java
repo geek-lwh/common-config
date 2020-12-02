@@ -8,14 +8,14 @@ import com.aha.tech.util.RepsonseCodeUtil;
  * 低级错误
  * 抛出warn级别
  */
-public class HowlersException extends RuntimeException implements GlobalException {
+public class HowlersException extends RuntimeException implements CustomerException {
 
     private int code;
 
     private String message;
 
     public HowlersException(int code, String message) {
-        this.code = code;
+        this.code = replaceCode(code);
         this.message = message;
     }
 
@@ -27,7 +27,6 @@ public class HowlersException extends RuntimeException implements GlobalExceptio
         this.code = code;
     }
 
-    @Override
     public String getMessage() {
         return message;
     }
@@ -37,10 +36,10 @@ public class HowlersException extends RuntimeException implements GlobalExceptio
     }
 
     @Override
-    public Integer code() {
+    public Integer replaceCode(int code) {
         Integer prefix = RepsonseCodeUtil.getApplictionPrefix(SystemEnvConstant.APPLICATION_NAME);
         // 错误码是6位的
-        return prefix * 10000 + this.code();
+        return prefix * 10000 + code;
     }
 
     @Override
