@@ -11,7 +11,6 @@ import io.opentracing.util.GlobalTracer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.server.ServerErrorException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -95,11 +94,10 @@ public class TraceUtil {
      * 异步请求传递trace,指定线程池
      * @param supplier
      * @param executor
-     * @param errorMessage
      * @param <T>
      * @return
      */
-    public static <T> CompletableFuture<T> asyncInvoke(Supplier<T> supplier, Executor executor, String errorMessage) {
+    public static <T> CompletableFuture<T> asyncInvoke(Supplier<T> supplier, Executor executor) {
         // 第一步
         Tracer tracer = GlobalTracer.get();
         Span span = tracer.scopeManager().activeSpan();
@@ -110,19 +108,16 @@ public class TraceUtil {
             }
         };
 
-        return CompletableFuture.supplyAsync(newSupplier, executor).exceptionally(e -> {
-            throw new ServerErrorException(errorMessage, e);
-        });
+        return CompletableFuture.supplyAsync(newSupplier, executor);
     }
 
     /**
      * 异步请求传递trace
      * @param supplier
-     * @param errorMessage
      * @param <T>
      * @return
      */
-    public static <T> CompletableFuture<T> asyncInvoke(Supplier<T> supplier, String errorMessage) {
+    public static <T> CompletableFuture<T> asyncInvoke(Supplier<T> supplier) {
         // 第一步
         Tracer tracer = GlobalTracer.get();
         Span span = tracer.scopeManager().activeSpan();
@@ -133,9 +128,7 @@ public class TraceUtil {
             }
         };
 
-        return CompletableFuture.supplyAsync(newSupplier).exceptionally(e -> {
-            throw new ServerErrorException(errorMessage, e);
-        });
+        return CompletableFuture.supplyAsync(newSupplier);
     }
 
 }
