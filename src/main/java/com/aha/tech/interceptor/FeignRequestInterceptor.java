@@ -56,9 +56,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         initRequestHeader(requestTemplate);
         overwriteXEnv(requestTemplate);
         tracing(requestTemplate);
-        if (feignLog) {
-            feignRequestLogging(requestTemplate);
-        }
+        feignRequestLogging(requestTemplate);
     }
 
     /**
@@ -161,6 +159,10 @@ public class FeignRequestInterceptor implements RequestInterceptor {
      * @param requestTemplate
      */
     private void feignRequestLogging(RequestTemplate requestTemplate) {
+        if (!feignLog) {
+            return;
+        }
+
         StringBuilder sb = new StringBuilder(System.lineSeparator());
         sb.append("Feign request URI : ").append(requestTemplate.url()).append(requestTemplate.queryLine()).append(System.lineSeparator());
         sb.append("Feign request HEADER : ").append(requestTemplate.headers().toString()).append(System.lineSeparator());
