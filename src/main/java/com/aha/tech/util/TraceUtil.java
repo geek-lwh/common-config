@@ -2,16 +2,22 @@ package com.aha.tech.util;
 
 import com.aha.tech.constant.HeaderConstant;
 import com.google.common.collect.Maps;
+import io.opentracing.Scope;
 import io.opentracing.Span;
+import io.opentracing.Tracer;
 import io.opentracing.log.Fields;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.server.ServerErrorException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.function.Supplier;
 
 /**
  * @Author: luweihong
@@ -83,6 +89,53 @@ public class TraceUtil {
     public static void setClue(Span span) {
         span.setTag(HeaderConstant.TRACE_ID, span.context().toTraceId());
         span.setTag(HeaderConstant.SPAN_ID, span.context().toSpanId());
+    }
+
+    /**
+     * 异步请求传递trace,指定线程池
+     * @param supplier
+     * @param executor
+     * @param errorMessage
+     * @param <T>
+     * @return
+     */
+    public static <T> CompletableFuture<T> asyncInvoke(Supplier<T> supplier, Executor executor, String errorMessage) {
+        // 第一步
+        Tracer tracer = GlobalTracer.get();
+        Span span = tracer.scopeManager().activeSpan();
+        Supplier<T> newSupplier = () -> {
+            // 第二步
+            try (Scope scope = tracer.scopeManager().activate(span)) {
+                return supplier.get();
+            }
+        };
+
+        return CompletableFuture.supplyAsync(newSupplier, executor).exceptionally(e -> {
+            throw new ServerErrorException(errorMessage, e);
+        });
+    }
+
+    /**
+     * 异步请求传递trace
+     * @param supplier
+     * @param errorMessage
+     * @param <T>
+     * @return
+     */
+    public static <T> CompletableFuture<T> asyncInvoke(Supplier<T> supplier, String errorMessage) {
+        // 第一步
+        Tracer tracer = GlobalTracer.get();
+        Span span = tracer.scopeManager().activeSpan();
+        Supplier<T> newSupplier = () -> {
+            // 第二步
+            try (Scope scope = tracer.scopeManager().activate(span)) {
+                return supplier.get();
+            }
+        };
+
+        return CompletableFuture.supplyAsync(newSupplier).exceptionally(e -> {
+            throw new ServerErrorException(errorMessage, e);
+        });
     }
 
 }

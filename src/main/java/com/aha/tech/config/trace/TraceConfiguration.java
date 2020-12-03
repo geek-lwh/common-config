@@ -54,6 +54,7 @@ public class TraceConfiguration {
 
         io.jaegertracing.Configuration config = new io.jaegertracing.Configuration(serviceName);
         config.withReporter(reporterConfiguration).withSampler(samplerConfiguration).withServiceName(serviceName);
+//        config.getTracerBuilder().withScopeManager(new TTLScopeManager()).build();
 
         JaegerTracer tracer = config.getTracer();
         GlobalTracer.registerIfAbsent(config.getTracer());
