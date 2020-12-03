@@ -111,7 +111,6 @@ public class TraceFilter implements Filter {
             chain.doFilter(servletRequest, servletResponse);
         } catch (Exception e) {
             TraceUtil.reportErrorTrace(e);
-            logger.error(e.getMessage(), e);
         } finally {
             span.finish();
         }

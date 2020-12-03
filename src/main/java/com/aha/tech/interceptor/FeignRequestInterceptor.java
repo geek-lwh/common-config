@@ -12,6 +12,7 @@ import com.ctrip.framework.apollo.ConfigService;
 import com.google.common.collect.Lists;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
+import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
@@ -54,15 +55,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
     public void apply(RequestTemplate requestTemplate) {
         initRequestHeader(requestTemplate);
         overwriteXEnv(requestTemplate);
-        Tracer tracer = GlobalTracer.get();
-        if (tracer != null) {
-            Span span = tracer.activeSpan();
-            SpanContext spanContext = span.context();
-            TraceUtil.setClue(span);
-            requestTemplate.header(HeaderConstant.TRACE_ID, spanContext.toTraceId());
-            requestTemplate.header(HeaderConstant.SPAN_ID, spanContext.toSpanId());
-            tracer.inject(spanContext, Format.Builtin.HTTP_HEADERS, new FeignCarrierWrapper(requestTemplate));
-        }
+        tracing(requestTemplate);
         if (feignLog) {
             feignRequestLogging(requestTemplate);
         }
@@ -132,6 +125,34 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         } catch (Exception e) {
             logger.error("构建traceInfo时 计算ip地址出错", e);
         }
+    }
+
+    /**
+     * 记录tracing
+     * @param requestTemplate
+     */
+    private void tracing(RequestTemplate requestTemplate) {
+        Tracer tracer = GlobalTracer.get();
+        if (tracer == null) {
+            return;
+        }
+        Span parentSpan = tracer.scopeManager().activeSpan();
+        if (parentSpan == null) {
+            logger.debug("异步线程没有通过threadLocal透传,parent span is null");
+            return;
+        }
+
+        Span span = tracer.buildSpan(requestTemplate.url()).asChildOf(parentSpan).start();
+        try (Scope scope = tracer.scopeManager().activate(span)) {
+            SpanContext spanContext = span.context();
+            TraceUtil.setClue(span);
+            tracer.inject(spanContext, Format.Builtin.HTTP_HEADERS, new FeignCarrierWrapper(requestTemplate));
+        } catch (Exception e) {
+            TraceUtil.reportErrorTrace(e);
+        } finally {
+            span.finish();
+        }
+
     }
 
     /**

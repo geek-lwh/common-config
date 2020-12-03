@@ -79,6 +79,12 @@ public class XEnvDto {
 
     @XEnv("x-env-preview")
     private String preview;//设备类型 值定义:ipad iphone
+    /**
+     * 注册渠道类型
+     */
+    @XEnv("x-env-register-source")
+    private String registerSource;
+
     // 是否重写
     private boolean overwrite = false;
 
@@ -109,6 +115,7 @@ public class XEnvDto {
         this.version = request.getHeader("version");
         this.equipment = request.getHeader("x-equipment");
         this.preview = request.getHeader("x-env-preview");
+        this.registerSource = request.getHeader("x-env-register-source");
         this.overwrite = false;
     }
 
@@ -291,6 +298,14 @@ public class XEnvDto {
 
     public void setOverwrite(boolean overwrite) {
         this.overwrite = overwrite;
+    }
+
+    public String getRegisterSource() {
+        return registerSource;
+    }
+
+    public void setRegisterSource(String registerSource) {
+        this.registerSource = registerSource;
     }
 
     @Override
