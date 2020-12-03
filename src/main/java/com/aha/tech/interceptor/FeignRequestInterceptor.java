@@ -136,6 +136,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         if (tracer == null) {
             return;
         }
+
         Span parentSpan = tracer.scopeManager().activeSpan();
         if (parentSpan == null) {
             logger.debug("异步线程没有通过threadLocal透传,parent span is null");
