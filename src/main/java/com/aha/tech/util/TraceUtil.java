@@ -98,17 +98,20 @@ public class TraceUtil {
      * @return
      */
     public static <T> CompletableFuture<T> asyncInvoke(Supplier<T> supplier, Executor executor) {
-        // 第一步
+        // 当前线程span
         Tracer tracer = GlobalTracer.get();
         Span span = tracer.scopeManager().activeSpan();
         Supplier<T> newSupplier = () -> {
-            // 第二步
+            //设置为子线程活动span 即当前线程
             try (Scope scope = tracer.scopeManager().activate(span)) {
                 return supplier.get();
             }
         };
 
-        return CompletableFuture.supplyAsync(newSupplier, executor);
+        return CompletableFuture.supplyAsync(newSupplier, executor).exceptionally(t -> {
+            reportErrorTrace((Exception) t);
+            return null;
+        });
     }
 
     /**
@@ -128,7 +131,10 @@ public class TraceUtil {
             }
         };
 
-        return CompletableFuture.supplyAsync(newSupplier);
+        return CompletableFuture.supplyAsync(newSupplier).exceptionally(t -> {
+            reportErrorTrace((Exception) t);
+            return null;
+        });
     }
 
 }

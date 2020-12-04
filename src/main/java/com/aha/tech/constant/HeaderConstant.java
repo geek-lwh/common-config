@@ -48,7 +48,7 @@ public class HeaderConstant {
 
     public static final String TRACE_ID = "X-TRACE-ID";
 
-    public static final String REQUEST_SOURCE = "REQUEST_SOURCE";
+    public static final String REQUEST_SOURCE = "FROM";
 
     public static final String REQUEST_FEIGN = "FEIGN";
 

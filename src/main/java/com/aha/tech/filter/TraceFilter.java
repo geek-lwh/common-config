@@ -86,7 +86,6 @@ public class TraceFilter implements Filter {
         Tracer tracer = GlobalTracer.get();
         Tracer.SpanBuilder spanBuilder = tracer.buildSpan(request.getRequestURI());
         try {
-            // 把header里的span信息和指定的map信息读取
             Map<String, String> hMap = TraceUtil.parseTraceContext(request);
             SpanContext parentSpan = tracer.extract(Format.Builtin.HTTP_HEADERS, new TextMapAdapter(hMap));
             if (parentSpan != null) {

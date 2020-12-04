@@ -116,10 +116,10 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         requestTemplate.header(HeaderConstant.HTTP_HEADER_X_REQUESTED_WITH_KEY, HTTP_HEADER_X_REQUESTED_WITH_VALUE);
         requestTemplate.header(HeaderConstant.CONTENT_ENCODING, CHARSET_ENCODING);
         requestTemplate.header(HeaderConstant.X_TOKEN_KEY, X_TOKEN);
-        requestTemplate.header(REQUEST_FROM, serverName);
-        requestTemplate.header(REQUEST_API, requestTemplate.url());
+        requestTemplate.header(HeaderConstant.REQUEST_FROM, serverName);
+        requestTemplate.header(HeaderConstant.REQUEST_API, requestTemplate.url());
         try {
-            requestTemplate.header(REQUEST_ADDRESS, IpUtil.getLocalHostAddress() + ":" + port);
+            requestTemplate.header(HeaderConstant.REQUEST_ADDRESS, IpUtil.getLocalHostAddress() + ":" + port);
         } catch (Exception e) {
             logger.error("构建traceInfo时 计算ip地址出错", e);
         }
@@ -137,7 +137,6 @@ public class FeignRequestInterceptor implements RequestInterceptor {
 
         Span parentSpan = tracer.scopeManager().activeSpan();
         if (parentSpan == null) {
-            logger.debug("异步线程没有通过threadLocal透传,parent span is null");
             return;
         }
 
@@ -151,7 +150,6 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         } finally {
             span.finish();
         }
-
     }
 
     /**
