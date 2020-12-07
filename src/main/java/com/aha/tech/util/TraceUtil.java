@@ -107,12 +107,10 @@ public class TraceUtil {
      * @param <T>
      * @return
      */
-    public static <T> CompletableFuture<T> future(Supplier<T> supplier, Executor executor) {
-        // 当前线程span
+    public static <T> CompletableFuture<T> asyncInvoke(Supplier<T> supplier, Executor executor) {
         Tracer tracer = GlobalTracer.get();
         Span span = tracer.scopeManager().activeSpan();
         Supplier<T> newSupplier = () -> {
-            //设置为子线程活动span 即当前线程
             try (Scope scope = tracer.scopeManager().activate(span)) {
                 return supplier.get();
             }
@@ -130,12 +128,10 @@ public class TraceUtil {
      * @param <T>
      * @return
      */
-    public static <T> CompletableFuture<T> future(Supplier<T> supplier) {
-        // 第一步
+    public static <T> CompletableFuture<T> asyncInvoke(Supplier<T> supplier) {
         Tracer tracer = GlobalTracer.get();
         Span span = tracer.scopeManager().activeSpan();
         Supplier<T> newSupplier = () -> {
-            // 第二步
             try (Scope scope = tracer.scopeManager().activate(span)) {
                 return supplier.get();
             }
@@ -145,6 +141,47 @@ public class TraceUtil {
             reportErrorTrace((Exception) t);
             return null;
         });
+    }
+
+    /**
+     * 异步请求传递trace
+     * @param runnable
+     * @return
+     */
+    public static CompletableFuture<Void> asyncInvoke(Runnable runnable, Executor executor) {
+        // 第一步
+        Tracer tracer = GlobalTracer.get();
+        Span span = tracer.scopeManager().activeSpan();
+        CompletableFuture<Void> future;
+        try (Scope scope = tracer.scopeManager().activate(span)) {
+            future = CompletableFuture.runAsync(runnable, executor);
+            future.exceptionally(t -> {
+                reportErrorTrace((Exception) t);
+                return null;
+            });
+        }
+
+        return future;
+    }
+
+    /**
+     * 异步请求传递trace
+     * @param runnable
+     * @return
+     */
+    public static CompletableFuture<Void> asyncInvoke(Runnable runnable) {
+        Tracer tracer = GlobalTracer.get();
+        Span span = tracer.scopeManager().activeSpan();
+        CompletableFuture<Void> future;
+        try (Scope scope = tracer.scopeManager().activate(span)) {
+            future = CompletableFuture.runAsync(runnable);
+            future.exceptionally(t -> {
+                reportErrorTrace((Exception) t);
+                return null;
+            });
+        }
+
+        return future;
     }
 
 }

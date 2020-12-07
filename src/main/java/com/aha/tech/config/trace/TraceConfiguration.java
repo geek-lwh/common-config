@@ -1,5 +1,6 @@
 package com.aha.tech.config.trace;
 
+import com.aha.tech.component.TTLScopeManager;
 import io.jaegertracing.internal.JaegerTracer;
 import io.jaegertracing.internal.samplers.ConstSampler;
 import io.opentracing.util.GlobalTracer;
@@ -54,7 +55,7 @@ public class TraceConfiguration {
 
         io.jaegertracing.Configuration config = new io.jaegertracing.Configuration(serviceName);
         config.withReporter(reporterConfiguration).withSampler(samplerConfiguration).withServiceName(serviceName);
-//        config.getTracerBuilder().withScopeManager(new TTLScopeManager()).build();
+        config.getTracerBuilder().withScopeManager(new TTLScopeManager()).build();
 
         JaegerTracer tracer = config.getTracer();
         GlobalTracer.registerIfAbsent(config.getTracer());

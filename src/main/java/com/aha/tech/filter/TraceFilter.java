@@ -2,6 +2,7 @@ package com.aha.tech.filter;
 
 import com.aha.tech.constant.HeaderConstant;
 import com.aha.tech.constant.OrderedConstant;
+import com.aha.tech.threadlocal.TraceThreadLocal;
 import com.aha.tech.util.MDCUtil;
 import com.aha.tech.util.TraceUtil;
 import io.opentracing.Scope;
@@ -102,6 +103,7 @@ public class TraceFilter implements Filter {
         MDCUtil.putTraceId(span.context().toTraceId());
 
         try (Scope scope = tracer.scopeManager().activate(span)) {
+            TraceThreadLocal.set(span);
             Tags.HTTP_URL.set(span, request.getRequestURI());
             Tags.HTTP_METHOD.set(span, request.getMethod());
             TraceUtil.setClue(span);
@@ -112,6 +114,7 @@ public class TraceFilter implements Filter {
             TraceUtil.reportErrorTrace(e);
         } finally {
             span.finish();
+            TraceThreadLocal.remove();
         }
     }
 
