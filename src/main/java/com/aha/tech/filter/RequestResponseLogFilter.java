@@ -117,7 +117,7 @@ public class RequestResponseLogFilter extends OncePerRequestFilter {
      * @return
      */
     private Boolean skipLogging(String uri) {
-        return uri.equals("prometheus");
+        return uri.equals("actuator/prometheus");
     }
 
 }
