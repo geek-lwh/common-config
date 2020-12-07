@@ -32,6 +32,12 @@ public class TraceUtil {
 
     public static final String SQL = "sql";
 
+    public static final String ERROR_FILE = "error.file";
+
+    public static final String ERROR_METHOD_NAME = "error.method.name";
+
+    public static final String ERROR_LINE = "error.line";
+
     // baggage 前缀
     public static final String BAGGAGE_PREFIX = "uberctx-";
 
@@ -52,6 +58,10 @@ public class TraceUtil {
         Tags.ERROR.set(span, true);
         span.log(err);
         logger.error(e.getMessage(), e);
+        StackTraceElement stackTraceElement = e.getStackTrace()[0];
+        span.setTag(ERROR_FILE, stackTraceElement.getFileName());
+        span.setTag(ERROR_LINE, stackTraceElement.getLineNumber());
+        span.setTag(ERROR_METHOD_NAME, stackTraceElement.getMethodName());
     }
 
     /**
@@ -97,7 +107,7 @@ public class TraceUtil {
      * @param <T>
      * @return
      */
-    public static <T> CompletableFuture<T> asyncInvoke(Supplier<T> supplier, Executor executor) {
+    public static <T> CompletableFuture<T> future(Supplier<T> supplier, Executor executor) {
         // 当前线程span
         Tracer tracer = GlobalTracer.get();
         Span span = tracer.scopeManager().activeSpan();
@@ -120,7 +130,7 @@ public class TraceUtil {
      * @param <T>
      * @return
      */
-    public static <T> CompletableFuture<T> asyncInvoke(Supplier<T> supplier) {
+    public static <T> CompletableFuture<T> future(Supplier<T> supplier) {
         // 第一步
         Tracer tracer = GlobalTracer.get();
         Span span = tracer.scopeManager().activeSpan();
