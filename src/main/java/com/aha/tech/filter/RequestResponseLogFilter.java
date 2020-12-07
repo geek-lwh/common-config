@@ -5,15 +5,15 @@ import com.aha.tech.filter.wrapper.RequestWrapper;
 import com.aha.tech.filter.wrapper.ResponseWrapper;
 import com.aha.tech.threadlocal.RequestLogThreadLocal;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
+import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,18 +26,44 @@ import java.util.Enumeration;
 @Component
 @Order(OrderedConstant.REQUEST_RESPONSE_FILTER_ORDERED)
 @WebFilter(filterName = "RequestResponseLogFilter", urlPatterns = "/*")
-public class RequestResponseLogFilter extends OncePerRequestFilter {
+public class RequestResponseLogFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestResponseLogFilter.class);
 
+    private String IGNORE_URI = "actuator/prometheus";
+
+    private String actuatorPrefix;
+
+    private String swaggerPrefix;
+
+    private String webjarsPrefix;
+
+    private String docPrefix;
+
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    public void init(FilterConfig filterConfig) {
+        ServletContext context = filterConfig.getServletContext();
+        ApplicationContext ac = WebApplicationContextUtils.getWebApplicationContext(context);
+        String contextPath = ac.getEnvironment().getProperty("common.server.tomcat.contextPath", "/");
+        if (contextPath.equals("/")) {
+            contextPath = Strings.EMPTY;
+        }
+        actuatorPrefix = contextPath + "/actuator/prometheus";
+        swaggerPrefix = contextPath + "/swagger";
+        webjarsPrefix = contextPath + "/webjars";
+        docPrefix = contextPath + "/v2/api-docs";
+    }
+
+    @Override
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) throws IOException, ServletException {
+        HttpServletRequest request = (HttpServletRequest) servletRequest;
+        HttpServletResponse response = (HttpServletResponse) servletResponse;
         StringBuffer requestURL = request.getRequestURL();
         String queryString = request.getQueryString();
         String uri = StringUtils.isBlank(queryString) ? requestURL.toString() : requestURL.append("?").append(queryString).toString();
 
         if (skipLogging(request.getRequestURI())) {
-            filterChain.doFilter(request, response);
+            chain.doFilter(request, response);
             return;
         }
 
@@ -48,14 +74,18 @@ public class RequestResponseLogFilter extends OncePerRequestFilter {
             StringBuilder requestLog = buildRequestLog(uri, requestWrapper);
             RequestLogThreadLocal.set(requestLog.toString());
             if (null == requestWrapper) {
-                filterChain.doFilter(request, response);
+                chain.doFilter(request, response);
             } else {
-                filterChain.doFilter(requestWrapper, responseWrapper);
+                chain.doFilter(requestWrapper, responseWrapper);
             }
             buildResponseLog(response, responseWrapper);
         } finally {
             RequestLogThreadLocal.remove();
         }
+    }
+
+    @Override
+    public void destroy() {
 
     }
 
@@ -113,13 +143,15 @@ public class RequestResponseLogFilter extends OncePerRequestFilter {
 
     /**
      * 是否跳过日志输出
-     * @param uri
+     * @param URI
      * @return
      */
-    private Boolean skipLogging(String uri) {
-        return uri.equals("actuator/prometheus");
+    private Boolean skipLogging(String URI) {
+        return URI.equals(actuatorPrefix)
+                || URI.startsWith(swaggerPrefix)
+                || URI.startsWith(webjarsPrefix)
+                || URI.startsWith(docPrefix);
     }
-
 }
 
 
