@@ -1,6 +1,7 @@
 package com.aha.tech.util;
 
 import com.aha.tech.constant.HeaderConstant;
+import com.aha.tech.threadlocal.TraceThreadLocal;
 import com.google.common.collect.Maps;
 import io.jaegertracing.internal.Constants;
 import io.opentracing.Scope;
@@ -97,7 +98,27 @@ public class TraceUtil {
     }
 
     /**
-     * 设置traceid的tag信息
+     * 设置server的tag信息
+     * @param request
+     * @param uri
+     * @param ignoreTraceApi
+     * @param span
+     */
+    public static void setServerTags(HttpServletRequest request, String uri, String ignoreTraceApi, Span span) {
+        TraceThreadLocal.set(span);
+        Tags.HTTP_URL.set(span, request.getRequestURI());
+        Tags.HTTP_METHOD.set(span, request.getMethod());
+        TraceUtil.setRpcTags(span, Tags.SPAN_KIND_SERVER);
+        TraceUtil.setTraceIdTags(span);
+        span.setTag(HeaderConstant.REQUEST_FROM, request.getHeader(HeaderConstant.REQUEST_FROM));
+        span.setTag(HeaderConstant.REQUEST_ADDRESS, request.getHeader(HeaderConstant.REQUEST_ADDRESS));
+        if (uri.equals(ignoreTraceApi)) {
+            Tags.SAMPLING_PRIORITY.set(span, 0);
+        }
+    }
+
+    /**
+     * 设置traceId的tag信息
      * @param span
      */
     public static void setTraceIdTags(Span span) {
@@ -108,15 +129,10 @@ public class TraceUtil {
     /**
      * 设置rpcClient的tag信息
      * @param span
-     * @param ip
-     * @param serviceName
-     * @param port
+     * @param type
      */
-    public static void setRpcClientTags(Span span, String ip, String serviceName, int port) {
-        Tags.PEER_HOST_IPV4.set(span, ip);
-        Tags.SPAN_KIND.set(span, Tags.SPAN_KIND_CLIENT);
-        Tags.PEER_PORT.set(span, port);
-        Tags.PEER_SERVICE.set(span, serviceName);
+    public static void setRpcTags(Span span, String type) {
+        Tags.SPAN_KIND.set(span, type);
     }
 
     /**

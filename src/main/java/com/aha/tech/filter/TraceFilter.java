@@ -1,6 +1,5 @@
 package com.aha.tech.filter;
 
-import com.aha.tech.constant.HeaderConstant;
 import com.aha.tech.constant.OrderedConstant;
 import com.aha.tech.threadlocal.TraceThreadLocal;
 import com.aha.tech.util.MDCUtil;
@@ -11,7 +10,6 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMapAdapter;
-import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -35,16 +33,12 @@ import java.util.Map;
 @WebFilter(filterName = "tracerServletFilter", urlPatterns = "/*")
 public class TraceFilter implements Filter {
 
-    private String actuatorPrefix;
-
-    private String swaggerPrefix;
-
-    private String webjarsPrefix;
-
-    private String docPrefix;
-
+    private String actuatorPrefix = "/actuator/prometheus";
 
     private final Logger logger = LoggerFactory.getLogger(TraceFilter.class);
+
+    private static String IGNORE_TRACE_API;
+
 
     @Override
     public void init(FilterConfig filterConfig) {
@@ -54,26 +48,14 @@ public class TraceFilter implements Filter {
         if (contextPath.equals("/")) {
             contextPath = Strings.EMPTY;
         }
-        actuatorPrefix = contextPath + "/actuator/prometheus";
-        swaggerPrefix = contextPath + "/swagger";
-        webjarsPrefix = contextPath + "/webjars";
-        docPrefix = contextPath + "/v2/api-docs";
+        IGNORE_TRACE_API = contextPath + actuatorPrefix;
     }
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
-        Boolean isExclude = isExcludeURI(request.getRequestURI());
-        try {
-            if (isExclude) {
-                chain.doFilter(servletRequest, servletResponse);
-            } else {
-                doTracingFilter(servletRequest, servletResponse, chain, request);
-            }
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            e.printStackTrace();
-        }
+//        Boolean isExclude = isExcludeURI(request.getRequestURI());
+        doTracingFilter(servletRequest, servletResponse, chain, request);
     }
 
     /**
@@ -84,6 +66,7 @@ public class TraceFilter implements Filter {
      * @param request
      */
     private void doTracingFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain, HttpServletRequest request) {
+        String uri = request.getRequestURI();
         Tracer tracer = GlobalTracer.get();
         Tracer.SpanBuilder spanBuilder = tracer.buildSpan(request.getRequestURI());
         try {
@@ -97,18 +80,11 @@ public class TraceFilter implements Filter {
             logger.error("解析trace context出现异常", e);
         }
 
-
-        // set current activate span
         Span span = spanBuilder.start();
         MDCUtil.putTraceId(span.context().toTraceId());
 
         try (Scope scope = tracer.scopeManager().activate(span)) {
-            TraceThreadLocal.set(span);
-            Tags.HTTP_URL.set(span, request.getRequestURI());
-            Tags.HTTP_METHOD.set(span, request.getMethod());
-            TraceUtil.setTraceIdTags(span);
-            span.setTag(HeaderConstant.REQUEST_FROM, request.getHeader(HeaderConstant.REQUEST_FROM));
-            span.setTag(HeaderConstant.REQUEST_ADDRESS, request.getHeader(HeaderConstant.REQUEST_ADDRESS));
+            TraceUtil.setServerTags(request, uri, IGNORE_TRACE_API, span);
             chain.doFilter(servletRequest, servletResponse);
         } catch (Exception e) {
             TraceUtil.setCapturedErrorsTags(e);
@@ -118,26 +94,10 @@ public class TraceFilter implements Filter {
         }
     }
 
+
     @Override
     public void destroy() {
 
     }
 
-    /**
-     * 是否是需要排除监控的url,如果是,则不需要trace监控
-     * @param URI
-     * @return
-     */
-    private Boolean isExcludeURI(String URI) {
-        return URI.equals(actuatorPrefix)
-                || URI.startsWith(swaggerPrefix)
-                || URI.startsWith(webjarsPrefix)
-                || URI.startsWith(docPrefix);
-    }
-
-    public static void main(String[] args) {
-        String a = "/actuator/prometheus";
-
-
-    }
 }

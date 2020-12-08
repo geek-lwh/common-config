@@ -5,7 +5,6 @@ import com.aha.tech.constant.HeaderConstant;
 import com.aha.tech.filter.wrapper.FeignCarrierWrapper;
 import com.aha.tech.model.XEnvDto;
 import com.aha.tech.threadlocal.XEnvThreadLocal;
-import com.aha.tech.util.IpUtil;
 import com.aha.tech.util.TraceUtil;
 import com.ctrip.framework.apollo.Config;
 import com.ctrip.framework.apollo.ConfigService;
@@ -17,6 +16,7 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
+import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -116,6 +116,8 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         requestTemplate.header(HeaderConstant.HTTP_HEADER_X_REQUESTED_WITH_KEY, HTTP_HEADER_X_REQUESTED_WITH_VALUE);
         requestTemplate.header(HeaderConstant.CONTENT_ENCODING, CHARSET_ENCODING);
         requestTemplate.header(HeaderConstant.X_TOKEN_KEY, X_TOKEN);
+        requestTemplate.header(HeaderConstant.REQUEST_FROM, serverName);
+        requestTemplate.header(HeaderConstant.REQUEST_API, requestTemplate.url());
     }
 
     /**
@@ -136,7 +138,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         try (Scope scope = tracer.scopeManager().activate(span)) {
             SpanContext spanContext = span.context();
             TraceUtil.setTraceIdTags(span);
-            TraceUtil.setRpcClientTags(span, IpUtil.getLocalHostAddress(), serverName, port);
+            TraceUtil.setRpcTags(span, Tags.SPAN_KIND_CLIENT);
             tracer.inject(spanContext, Format.Builtin.HTTP_HEADERS, new FeignCarrierWrapper(requestTemplate));
         } catch (Exception e) {
             TraceUtil.setCapturedErrorsTags(e);
