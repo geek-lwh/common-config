@@ -35,10 +35,10 @@ public class TraceAop {
 
             Span span = spanBuilder.start();
             try (Scope scope = tracer.scopeManager().activate(span)) {
-                TraceUtil.setClue(span);
+                TraceUtil.setTraceIdTags(span);
                 return pjp.proceed();
             } catch (Exception e) {
-                TraceUtil.reportErrorTrace(e);
+                TraceUtil.setCapturedErrorsTags(e);
                 throw e;
             } finally {
                 span.finish();

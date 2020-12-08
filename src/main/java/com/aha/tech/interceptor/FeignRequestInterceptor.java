@@ -116,13 +116,6 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         requestTemplate.header(HeaderConstant.HTTP_HEADER_X_REQUESTED_WITH_KEY, HTTP_HEADER_X_REQUESTED_WITH_VALUE);
         requestTemplate.header(HeaderConstant.CONTENT_ENCODING, CHARSET_ENCODING);
         requestTemplate.header(HeaderConstant.X_TOKEN_KEY, X_TOKEN);
-        requestTemplate.header(HeaderConstant.REQUEST_FROM, serverName);
-        requestTemplate.header(HeaderConstant.REQUEST_API, requestTemplate.url());
-        try {
-            requestTemplate.header(HeaderConstant.REQUEST_ADDRESS, IpUtil.getLocalHostAddress() + ":" + port);
-        } catch (Exception e) {
-            logger.error("构建traceInfo时 计算ip地址出错", e);
-        }
     }
 
     /**
@@ -142,10 +135,11 @@ public class FeignRequestInterceptor implements RequestInterceptor {
 
         try (Scope scope = tracer.scopeManager().activate(span)) {
             SpanContext spanContext = span.context();
-            TraceUtil.setClue(span);
+            TraceUtil.setTraceIdTags(span);
+            TraceUtil.setRpcClientTags(span, IpUtil.getLocalHostAddress(), serverName, port);
             tracer.inject(spanContext, Format.Builtin.HTTP_HEADERS, new FeignCarrierWrapper(requestTemplate));
         } catch (Exception e) {
-            TraceUtil.reportErrorTrace(e);
+            TraceUtil.setCapturedErrorsTags(e);
         } finally {
             span.finish();
         }

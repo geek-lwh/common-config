@@ -4,7 +4,6 @@ import com.aha.tech.util.TraceUtil;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
-import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;
@@ -33,20 +32,17 @@ import java.util.Properties;
                 RowBounds.class, ResultHandler.class})})
 public class TracePlugin implements Interceptor {
 
-    private String datasourceUrl;
+    private String dbInstance;
 
-    public TracePlugin(String datasourceUrl) {
-        this.datasourceUrl = datasourceUrl;
+    public TracePlugin(String dbInstance) {
+        this.dbInstance = dbInstance;
     }
 
     public Object intercept(Invocation invocation) throws InvocationTargetException, IllegalAccessException {
         Tracer tracer = GlobalTracer.get();
         MappedStatement mappedStatement = (MappedStatement) invocation.getArgs()[0];
         String methodName = this.getMethodName(mappedStatement);
-        Tracer.SpanBuilder spanBuilder = tracer.buildSpan(methodName)
-                .withTag(Tags.DB_TYPE, TraceUtil.SQL)
-                .withTag(Tags.DB_INSTANCE, datasourceUrl)
-                .withTag(Tags.DB_STATEMENT, getSql(invocation, mappedStatement));
+        Tracer.SpanBuilder spanBuilder = tracer.buildSpan(methodName);
 
         Span parentSpan = tracer.activeSpan();
         if (parentSpan != null) {
@@ -55,11 +51,12 @@ public class TracePlugin implements Interceptor {
 
         Span span = spanBuilder.start();
         try (Scope scope = tracer.scopeManager().activate(span)) {
-            TraceUtil.setClue(span);
+            TraceUtil.setTraceIdTags(span);
+            TraceUtil.setSqlCallsTags(span, dbInstance, getSql(invocation, mappedStatement));
             Object returnValue = invocation.proceed();
             return returnValue;
         } catch (Exception e) {
-            TraceUtil.reportErrorTrace(e);
+            TraceUtil.setCapturedErrorsTags(e);
             throw e;
         } finally {
             span.finish();
@@ -136,11 +133,11 @@ public class TracePlugin implements Interceptor {
 
     }
 
-    public String getDatasourceUrl() {
-        return datasourceUrl;
+    public String getDbInstance() {
+        return dbInstance;
     }
 
-    public void setDatasourceUrl(String datasourceUrl) {
-        this.datasourceUrl = datasourceUrl;
+    public void setDbInstance(String dbInstance) {
+        this.dbInstance = dbInstance;
     }
 }

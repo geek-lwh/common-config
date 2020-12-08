@@ -2,6 +2,7 @@ package com.aha.tech.util;
 
 import com.aha.tech.constant.HeaderConstant;
 import com.google.common.collect.Maps;
+import io.jaegertracing.internal.Constants;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -13,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Enumeration;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -32,11 +34,7 @@ public class TraceUtil {
 
     public static final String SQL = "sql";
 
-    public static final String ERROR_FILE = "error.file";
-
-    public static final String ERROR_METHOD_NAME = "error.method.name";
-
-    public static final String ERROR_LINE = "error.line";
+    public static final String ERROR = "error";
 
     // baggage 前缀
     public static final String BAGGAGE_PREFIX = "uberctx-";
@@ -45,23 +43,20 @@ public class TraceUtil {
 
 
     /**
-     * 上报一个error在trace中
+     * 设置错误信息的tags
      * @param e
      * @return
      */
-    public static void reportErrorTrace(Exception e) {
+    public static void setCapturedErrorsTags(Exception e) {
         Span span = GlobalTracer.get().activeSpan();
         Map err = Maps.newHashMapWithExpectedSize(6);
-        err.put(Fields.EVENT, Tags.ERROR.getKey());
-        err.put(Fields.ERROR_OBJECT, e);
+        err.put(Fields.EVENT, ERROR);
         err.put(Fields.MESSAGE, e.getMessage());
+        err.put(Fields.ERROR_OBJECT, e);
+        err.put(Fields.STACK, e.getStackTrace()[0]);
         Tags.ERROR.set(span, true);
         span.log(err);
         logger.error(e.getMessage(), e);
-        StackTraceElement stackTraceElement = e.getStackTrace()[0];
-        span.setTag(ERROR_FILE, stackTraceElement.getFileName());
-        span.setTag(ERROR_LINE, stackTraceElement.getLineNumber());
-        span.setTag(ERROR_METHOD_NAME, stackTraceElement.getMethodName());
     }
 
     /**
@@ -78,13 +73,7 @@ public class TraceUtil {
             return hMap;
         }
 
-//        Enumeration<String> headerNames = servletRequest.getHeaderNames();
-//        while (headerNames.hasMoreElements()) {
-//            String h = headerNames.nextElement();
-//            if (h.startsWith(BAGGAGE_PREFIX) || h.equals(Constants.BAGGAGE_HEADER_KEY) || h.equals(Constants.DEBUG_ID_HEADER_KEY)) {
-//                hMap.put(h, servletRequest.getHeader(h));
-//            }
-//        }
+//        baggage(servletRequest, hMap);
 
         hMap.put(HeaderConstant.UBER_TRACE_ID, traceId);
 
@@ -92,12 +81,54 @@ public class TraceUtil {
     }
 
     /**
-     * 设置每个tace中span的线索
+     * 查找baggage item 暂时没有使用
+     * @param servletRequest
+     * @param hMap
+     */
+    @Deprecated
+    private static void lookupBaggageItem(HttpServletRequest servletRequest, Map<String, String> hMap) {
+        Enumeration<String> headerNames = servletRequest.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String h = headerNames.nextElement();
+            if (h.startsWith(BAGGAGE_PREFIX) || h.equals(Constants.BAGGAGE_HEADER_KEY) || h.equals(Constants.DEBUG_ID_HEADER_KEY)) {
+                hMap.put(h, servletRequest.getHeader(h));
+            }
+        }
+    }
+
+    /**
+     * 设置traceid的tag信息
      * @param span
      */
-    public static void setClue(Span span) {
+    public static void setTraceIdTags(Span span) {
         span.setTag(HeaderConstant.TRACE_ID, span.context().toTraceId());
         span.setTag(HeaderConstant.SPAN_ID, span.context().toSpanId());
+    }
+
+    /**
+     * 设置rpcClient的tag信息
+     * @param span
+     * @param ip
+     * @param serviceName
+     * @param port
+     */
+    public static void setRpcClientTags(Span span, String ip, String serviceName, int port) {
+        Tags.PEER_HOST_IPV4.set(span, ip);
+        Tags.SPAN_KIND.set(span, Tags.SPAN_KIND_CLIENT);
+        Tags.PEER_PORT.set(span, port);
+        Tags.PEER_SERVICE.set(span, serviceName);
+    }
+
+    /**
+     * 设置sql语句的tag信息
+     * @param span
+     * @param dbInstance
+     * @param statement
+     */
+    public static void setSqlCallsTags(Span span, String dbInstance, String statement) {
+        Tags.DB_TYPE.set(span, SQL);
+        Tags.DB_INSTANCE.set(span, dbInstance);
+        Tags.DB_STATEMENT.set(span, statement);
     }
 
     /**
@@ -117,7 +148,7 @@ public class TraceUtil {
         };
 
         return CompletableFuture.supplyAsync(newSupplier, executor).exceptionally(t -> {
-            reportErrorTrace((Exception) t);
+            setCapturedErrorsTags((Exception) t);
             return null;
         });
     }
@@ -138,7 +169,7 @@ public class TraceUtil {
         };
 
         return CompletableFuture.supplyAsync(newSupplier).exceptionally(t -> {
-            reportErrorTrace((Exception) t);
+            setCapturedErrorsTags((Exception) t);
             return null;
         });
     }
@@ -156,7 +187,7 @@ public class TraceUtil {
         try (Scope scope = tracer.scopeManager().activate(span)) {
             future = CompletableFuture.runAsync(runnable, executor);
             future.exceptionally(t -> {
-                reportErrorTrace((Exception) t);
+                setCapturedErrorsTags((Exception) t);
                 return null;
             });
         }
@@ -176,7 +207,7 @@ public class TraceUtil {
         try (Scope scope = tracer.scopeManager().activate(span)) {
             future = CompletableFuture.runAsync(runnable);
             future.exceptionally(t -> {
-                reportErrorTrace((Exception) t);
+                setCapturedErrorsTags((Exception) t);
                 return null;
             });
         }

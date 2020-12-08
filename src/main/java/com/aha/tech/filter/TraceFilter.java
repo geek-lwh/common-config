@@ -106,12 +106,12 @@ public class TraceFilter implements Filter {
             TraceThreadLocal.set(span);
             Tags.HTTP_URL.set(span, request.getRequestURI());
             Tags.HTTP_METHOD.set(span, request.getMethod());
-            TraceUtil.setClue(span);
+            TraceUtil.setTraceIdTags(span);
             span.setTag(HeaderConstant.REQUEST_FROM, request.getHeader(HeaderConstant.REQUEST_FROM));
             span.setTag(HeaderConstant.REQUEST_ADDRESS, request.getHeader(HeaderConstant.REQUEST_ADDRESS));
             chain.doFilter(servletRequest, servletResponse);
         } catch (Exception e) {
-            TraceUtil.reportErrorTrace(e);
+            TraceUtil.setCapturedErrorsTags(e);
         } finally {
             span.finish();
             TraceThreadLocal.remove();
