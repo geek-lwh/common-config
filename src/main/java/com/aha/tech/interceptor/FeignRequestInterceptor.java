@@ -135,12 +135,11 @@ public class FeignRequestInterceptor implements RequestInterceptor {
             return;
         }
 
-        Span parentSpan = tracer.scopeManager().activeSpan();
-        if (parentSpan == null) {
+        Span span = tracer.scopeManager().activeSpan();
+        if (span == null) {
             return;
         }
 
-        Span span = tracer.buildSpan(requestTemplate.url()).asChildOf(parentSpan).start();
         try (Scope scope = tracer.scopeManager().activate(span)) {
             SpanContext spanContext = span.context();
             TraceUtil.setClue(span);
