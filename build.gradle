@@ -99,8 +99,8 @@ dependencies {
     compile("com.ctrip.framework.apollo:apollo-client:1.0.0")
 
     // nacos register center
-//    compile("org.springframework.cloud:spring-cloud-starter-alibaba-nacos-discovery:0.9.0.RELEASE")
-    compile("com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery:2.0.3.RELEASE")
+    compile("org.springframework.cloud:spring-cloud-starter-alibaba-nacos-discovery:0.9.0.RELEASE")
+//    compile("com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery:2.0.3.RELEASE")
 
     // metrics
     compile("io.micrometer:micrometer-registry-prometheus:1.0.5")
@@ -121,7 +121,7 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 
 
 def name = 'aha-commons-config'
-version = '3.9.0'
+version = '3.9.1'
 def group = 'com.aha.public'
 
 //上传jar命令 gradle publish
