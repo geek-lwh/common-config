@@ -112,6 +112,7 @@ public class TraceUtil {
         TraceUtil.setTraceIdTags(span);
         span.setTag(HeaderConstant.REQUEST_FROM, request.getHeader(HeaderConstant.REQUEST_FROM));
         span.setTag(HeaderConstant.REQUEST_ADDRESS, request.getHeader(HeaderConstant.REQUEST_ADDRESS));
+        span.setTag(HeaderConstant.HEADER_USER_ID, request.getHeader(HeaderConstant.HEADER_USER_ID));
         if (uri.equals(ignoreTraceApi)) {
             Tags.SAMPLING_PRIORITY.set(span, 0);
         }

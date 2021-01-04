@@ -62,5 +62,7 @@ public class HeaderConstant {
 
     public static final String UBER_TRACE_ID = "UBER-TRACE-ID";
 
+    public static final String HEADER_USER_ID = "X-User-Id";
+
 
 }
