@@ -47,10 +47,6 @@ public class FeignRequestInterceptor implements RequestInterceptor {
 
     private static Boolean feignLog = config.getBooleanProperty("feign.log", Boolean.FALSE);
 
-    private static String serverName = config.getProperty("spring.application.name", "UNKNOWN");
-
-    private static int port = config.getIntProperty("common.server.tomcat.port", 0);
-
     @Override
     public void apply(RequestTemplate requestTemplate) {
         initRequestHeader(requestTemplate);
@@ -116,7 +112,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         requestTemplate.header(HeaderConstant.HTTP_HEADER_X_REQUESTED_WITH_KEY, HTTP_HEADER_X_REQUESTED_WITH_VALUE);
         requestTemplate.header(HeaderConstant.CONTENT_ENCODING, CHARSET_ENCODING);
         requestTemplate.header(HeaderConstant.X_TOKEN_KEY, X_TOKEN);
-        requestTemplate.header(HeaderConstant.REQUEST_FROM, serverName);
+//        requestTemplate.header(HeaderConstant.REQUEST_FROM, serverName);
         requestTemplate.header(HeaderConstant.REQUEST_API, requestTemplate.url());
     }
 

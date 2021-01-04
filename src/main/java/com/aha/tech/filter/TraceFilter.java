@@ -54,7 +54,6 @@ public class TraceFilter implements Filter {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
-//        Boolean isExclude = isExcludeURI(request.getRequestURI());
         doTracingFilter(servletRequest, servletResponse, chain, request);
     }
 
