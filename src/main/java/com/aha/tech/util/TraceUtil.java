@@ -49,14 +49,19 @@ public class TraceUtil {
      * @return
      */
     public static void setCapturedErrorsTags(Exception e) {
-        Span span = GlobalTracer.get().activeSpan();
-        Map err = Maps.newHashMapWithExpectedSize(6);
-        err.put(Fields.EVENT, ERROR);
-        err.put(Fields.MESSAGE, e.getMessage());
-        err.put(Fields.ERROR_OBJECT, e);
-        err.put(Fields.STACK, e.getStackTrace()[0]);
-        Tags.ERROR.set(span, true);
-        span.log(err);
+        try {
+            Span span = GlobalTracer.get().activeSpan();
+            Map err = Maps.newHashMapWithExpectedSize(6);
+            err.put(Fields.EVENT, ERROR);
+            err.put(Fields.MESSAGE, e.getMessage());
+            err.put(Fields.ERROR_OBJECT, e);
+            err.put(Fields.STACK, e.getStackTrace()[0]);
+            Tags.ERROR.set(span, true);
+            span.log(err);
+        } catch (Exception ex) {
+            logger.error(ex.getMessage(), ex);
+        }
+
         logger.error(e.getMessage(), e);
     }
 
@@ -110,8 +115,6 @@ public class TraceUtil {
         Tags.HTTP_METHOD.set(span, request.getMethod());
         TraceUtil.setRpcTags(span, Tags.SPAN_KIND_SERVER);
         TraceUtil.setTraceIdTags(span);
-//        span.setTag(HeaderConstant.REQUEST_FROM, request.getHeader(HeaderConstant.REQUEST_FROM));
-//        span.setTag(HeaderConstant.REQUEST_ADDRESS, request.getHeader(HeaderConstant.REQUEST_ADDRESS));
         span.setTag(HeaderConstant.HEADER_USER_ID, request.getHeader(HeaderConstant.HEADER_USER_ID));
         if (uri.equals(ignoreTraceApi)) {
             Tags.SAMPLING_PRIORITY.set(span, 0);
