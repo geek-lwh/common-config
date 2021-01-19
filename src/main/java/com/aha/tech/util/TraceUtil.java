@@ -51,6 +51,10 @@ public class TraceUtil {
     public static void setCapturedErrorsTags(Exception e) {
         try {
             Span span = GlobalTracer.get().activeSpan();
+            if(span == null){
+                logger.warn("span is empty during setCapturedErrorsTags");
+                return;
+            }
             Map err = Maps.newHashMapWithExpectedSize(6);
             err.put(Fields.EVENT, ERROR);
             err.put(Fields.MESSAGE, e.getMessage());
@@ -61,8 +65,6 @@ public class TraceUtil {
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
         }
-
-        logger.error(e.getMessage(), e);
     }
 
     /**
@@ -110,6 +112,10 @@ public class TraceUtil {
      * @param span
      */
     public static void setServerTags(HttpServletRequest request, String uri, String ignoreTraceApi, Span span) {
+        if(span == null){
+            logger.warn("span is empty during setServerTags");
+            return;
+        }
         TraceThreadLocal.set(span);
         Tags.HTTP_URL.set(span, request.getRequestURI());
         Tags.HTTP_METHOD.set(span, request.getMethod());
@@ -126,6 +132,10 @@ public class TraceUtil {
      * @param span
      */
     public static void setTraceIdTags(Span span) {
+        if(span == null){
+            logger.warn("span is empty during setTraceIdTags");
+            return;
+        }
         span.setTag(HeaderConstant.TRACE_ID, span.context().toTraceId());
         span.setTag(HeaderConstant.SPAN_ID, span.context().toSpanId());
     }
@@ -136,6 +146,10 @@ public class TraceUtil {
      * @param type
      */
     public static void setRpcTags(Span span, String type) {
+        if(span == null){
+            logger.warn("span is empty during setRpcTags");
+            return;
+        }
         Tags.SPAN_KIND.set(span, type);
     }
 
@@ -146,6 +160,10 @@ public class TraceUtil {
      * @param statement
      */
     public static void setSqlCallsTags(Span span, String dbInstance, String statement) {
+        if(span == null){
+            logger.warn("span is empty during setSqlCallsTags");
+            return;
+        }
         Tags.DB_TYPE.set(span, SQL);
         Tags.DB_INSTANCE.set(span, dbInstance);
         Tags.DB_STATEMENT.set(span, statement);
