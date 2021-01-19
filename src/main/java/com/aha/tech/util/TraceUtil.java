@@ -186,7 +186,9 @@ public class TraceUtil {
         };
 
         return CompletableFuture.supplyAsync(newSupplier, executor).exceptionally(t -> {
-            setCapturedErrorsTags((Exception) t);
+            if(span != null){
+                setCapturedErrorsTags((Exception) t);
+            }
             return null;
         });
     }
@@ -207,7 +209,9 @@ public class TraceUtil {
         };
 
         return CompletableFuture.supplyAsync(newSupplier).exceptionally(t -> {
-            setCapturedErrorsTags((Exception) t);
+            if(span != null){
+                setCapturedErrorsTags((Exception) t);
+            }
             return null;
         });
     }
@@ -225,7 +229,9 @@ public class TraceUtil {
         try (Scope scope = tracer.scopeManager().activate(span)) {
             future = CompletableFuture.runAsync(runnable, executor);
             future.exceptionally(t -> {
-                setCapturedErrorsTags((Exception) t);
+                if(span != null){
+                    setCapturedErrorsTags((Exception) t);
+                }
                 return null;
             });
         }
@@ -245,7 +251,9 @@ public class TraceUtil {
         try (Scope scope = tracer.scopeManager().activate(span)) {
             future = CompletableFuture.runAsync(runnable);
             future.exceptionally(t -> {
-                setCapturedErrorsTags((Exception) t);
+                if(span != null){
+                    setCapturedErrorsTags((Exception) t);
+                }
                 return null;
             });
         }

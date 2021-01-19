@@ -122,9 +122,6 @@ public class FeignRequestInterceptor implements RequestInterceptor {
      */
     private void tracing(RequestTemplate requestTemplate) {
         Tracer tracer = GlobalTracer.get();
-        if (tracer == null) {
-            return;
-        }
 
         Span span = tracer.scopeManager().activeSpan();
         if (span == null) {
@@ -137,6 +134,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
             TraceUtil.setRpcTags(span, Tags.SPAN_KIND_CLIENT);
             tracer.inject(spanContext, Format.Builtin.HTTP_HEADERS, new FeignCarrierWrapper(requestTemplate));
         } catch (Exception e) {
+            logger.error("feign remote {} error",requestTemplate.url(),e);
             TraceUtil.setCapturedErrorsTags(e);
         } finally {
             span.finish();
