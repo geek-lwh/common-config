@@ -63,7 +63,7 @@ public class TraceUtil {
             Tags.ERROR.set(span, true);
             span.log(err);
         } catch (Exception ex) {
-            logger.error(ex.getMessage(), ex);
+            logger.error("error during setCapturedErrorsTags", ex);
         }
     }
 

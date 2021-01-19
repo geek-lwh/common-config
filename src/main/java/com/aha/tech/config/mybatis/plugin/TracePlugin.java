@@ -51,9 +51,9 @@ public class TracePlugin implements Interceptor {
 
         Span span = spanBuilder.start();
         try (Scope scope = tracer.scopeManager().activate(span)) {
+            Object returnValue = invocation.proceed();
             TraceUtil.setTraceIdTags(span);
             TraceUtil.setSqlCallsTags(span, dbInstance, getSql(invocation, mappedStatement));
-            Object returnValue = invocation.proceed();
             return returnValue;
         } catch (Exception e) {
             TraceUtil.setCapturedErrorsTags(e);
