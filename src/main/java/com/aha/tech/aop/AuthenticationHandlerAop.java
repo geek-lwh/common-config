@@ -29,8 +29,6 @@ public class AuthenticationHandlerAop {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthenticationHandlerAop.class);
 
-    private static final String USER_FILED = "userId";
-
     private static final String GET_USER_ID_METHOD_NAME = "getUserId";
 
     private static final String USER_PARAM_FILED = "user_id";
@@ -79,7 +77,7 @@ public class AuthenticationHandlerAop {
         }
 
         Object bean = paramsArray[0];
-        Long userId = userIdExist(bean, GET_USER_ID_METHOD_NAME);
+        Long userId = userIdExist(bean);
         if (userId == null || userId <= 0l) {
             throw new AuthenticationFailedException(api);
         }
@@ -102,26 +100,14 @@ public class AuthenticationHandlerAop {
         }
     }
 
-    /**
-     * 判断用户是否存在
-     * 用户id必须是Long类型
-     * @param u
-     * @param method
-     * @return
-     */
-    private Long userIdExist(Object u, String method) {
-        Long value = null;
-        Method[] m = u.getClass().getMethods();
-        for (int i = 0; i < m.length; i++) {
-            if ((method).toLowerCase().equals(m[i].getName().toLowerCase())) {
-                try {
-                    value = (Long) m[i].invoke(u);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+    /** * 执行get方法 * * @param o 执行对象 * @param fieldName 属性 */
+    public static Long userIdExist(Object o) {
+        try {
+            Method method = o.getClass().getMethod(GET_USER_ID_METHOD_NAME);
+            return (Long) method.invoke(o, new Object[0]);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        return value;
+        return null;
     }
 }
