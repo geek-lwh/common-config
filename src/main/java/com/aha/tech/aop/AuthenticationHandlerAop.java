@@ -100,7 +100,11 @@ public class AuthenticationHandlerAop {
         }
     }
 
-    /** * 执行get方法 * * @param o 执行对象 * @param fieldName 属性 */
+    /**
+     * 指定获取getUserId方法
+     * @param o
+     * @return
+     */
     public static Long userIdExist(Object o) {
         try {
             Method method = o.getClass().getMethod(GET_USER_ID_METHOD_NAME);
