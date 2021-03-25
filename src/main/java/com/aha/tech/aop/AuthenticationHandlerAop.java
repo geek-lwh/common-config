@@ -2,8 +2,6 @@ package com.aha.tech.aop;
 
 import com.aha.tech.annotation.Authentication;
 import com.aha.tech.exception.AuthenticationFailedException;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
@@ -19,10 +17,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @Author: luweihong
@@ -35,6 +30,8 @@ public class AuthenticationHandlerAop {
     private static final Logger logger = LoggerFactory.getLogger(AuthenticationHandlerAop.class);
 
     private static final String USER_FILED = "userId";
+
+    private static final String GET_USER_ID_METHOD_NAME = "getUserId";
 
     private static final String USER_PARAM_FILED = "user_id";
 
@@ -58,13 +55,10 @@ public class AuthenticationHandlerAop {
         String api = request.getRequestURI();
         HttpMethod httpMethod = HttpMethod.valueOf(request.getMethod());
         switch (httpMethod) {
-            case POST:
-            case PUT:
-            case PATCH:
+            case POST: case PUT: case PATCH:
                 verifyBody(joinPoint, api);
                 break;
-            case GET:
-            case DELETE:
+            case GET: case DELETE:
                 verifyParams(request, api);
                 break;
             default:
@@ -84,20 +78,11 @@ public class AuthenticationHandlerAop {
             throw new AuthenticationFailedException(api);
         }
 
-        Object param = paramsArray[0];
-        List<Object> list = Lists.newArrayList(param);
-        list.forEach(obj -> {
-            Map<String, Object> body = this.convertObjToMap(obj);
-            if (!body.containsKey(USER_FILED)) {
-                throw new AuthenticationFailedException(api);
-            }
-
-            Long userId = body.get(USER_FILED) == null ? null : Long.parseLong(body.get(USER_FILED).toString());
-            if (userId == null || userId <= 0l) {
-                throw new AuthenticationFailedException(api);
-            }
-        });
-
+        Object bean = paramsArray[0];
+        Long userId = userIdExist(bean, GET_USER_ID_METHOD_NAME);
+        if (userId == null || userId <= 0l) {
+            throw new AuthenticationFailedException(api);
+        }
     }
 
     /**
@@ -118,28 +103,25 @@ public class AuthenticationHandlerAop {
     }
 
     /**
-     * obj转map
-     * @param obj
+     * 判断用户是否存在
+     * 用户id必须是Long类型
+     * @param u
+     * @param method
      * @return
      */
-    private static Map<String, Object> convertObjToMap(Object obj) {
-        Map<String, Object> reMap = Maps.newHashMap();
-        if (obj == null) return null;
-        Field[] fields = obj.getClass().getDeclaredFields();
-        try {
-            for (int i = 0; i < fields.length; i++) {
+    private Long userIdExist(Object u, String method) {
+        Long value = null;
+        Method[] m = u.getClass().getMethods();
+        for (int i = 0; i < m.length; i++) {
+            if ((method).toLowerCase().equals(m[i].getName().toLowerCase())) {
                 try {
-                    Field f = obj.getClass().getDeclaredField(fields[i].getName());
-                    f.setAccessible(true);
-                    Object o = f.get(obj);
-                    reMap.put(fields[i].getName(), o);
+                    value = (Long) m[i].invoke(u);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-        } catch (SecurityException e) {
-            e.printStackTrace();
         }
-        return reMap;
+
+        return value;
     }
 }

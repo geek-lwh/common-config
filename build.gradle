@@ -121,7 +121,7 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 
 
 def name = 'aha-commons-config'
-version = '3.10.2'
+version = '3.13.0-SNAPHOST'
 def group = 'com.aha.public'
 
 //上传jar命令 gradle publish
@@ -145,7 +145,12 @@ publishing {
     repositories {
         maven {
             //指定要上传的maven私服仓库
-            url = "http://testm.ahaschool.com:9200/nexus/content/repositories/huijiame_repo/"
+            if (project.version.endsWith('-SNAPSHOT')) {
+                url = "http://testm.ahaschool.com:9200/nexus/content/repositories/snapshots/"
+            } else {
+                url = "http://testm.ahaschool.com:9200/nexus/content/repositories/huijiame_repo/"
+            }
+//            url = "http://testm.ahaschool.com:9200/nexus/content/repositories/huijiame_repo/"
             //认证用户和密码
             credentials {
                 username 'admin'
